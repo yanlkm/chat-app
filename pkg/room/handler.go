@@ -107,7 +107,7 @@ func GetRoomMembersHandler(roomService RoomService, userService user.UserService
 		membersID := room.Members
 		// get all users by id
 		var users []user.User
-		for i, memberID := range membersID {
+		for _, memberID := range membersID {
 			// convert memberID string to string hex
 			memberObjectID, err := primitive.ObjectIDFromHex(memberID)
 			if err != nil {
@@ -119,8 +119,9 @@ func GetRoomMembersHandler(roomService RoomService, userService user.UserService
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get members"})
 				return
 			}
+			// remove password from user and more
 			userRetrieved.Password = ""
-			users[i] = *userRetrieved
+			users = append(users, *userRetrieved)
 		}
 		// return users
 		c.JSON(http.StatusOK, gin.H{"status": true, "users": users})
@@ -200,30 +201,13 @@ func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
 // TODO : Add a handler to delete a room
 func DeleteRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// get userID (logged in) from token cookie/headers
-		// Get token from cookie
-		token, err := c.Cookie("token")
-		if err != nil {
-			token := c.GetHeader("Authorization")
-			if token == "" {
-				c.JSON(http.StatusUnauthorized, gin.H{"error": "1 - Unauthorized"})
-				c.Abort()
-				return
-			}
-		}
 
-		// Verify and decode token
-		claims, err := utils.VerifyToken(&token)
+		userConnectedId, _, err := utils.GetUserIDAndUsernameFromContext(c)
 		if err != nil {
-			fmt.Println("Error: ", err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "2 - Unauthorized"})
-			c.Abort()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not room"})
+			return
 			return
 		}
-
-		//check if user is logged in with id passed in params
-		// convert claims ObjectId to string
-		stringClaimsObjectId := claims.UserID.Hex()
 
 		roomID := c.Param("id")
 		objectID, err := primitive.ObjectIDFromHex(roomID)
@@ -237,12 +221,12 @@ func DeleteRoomHandler(roomService RoomService) gin.HandlerFunc {
 			return
 		}
 		// check if stringClaimsObjectID is the room creator
-		if stringClaimsObjectId != room.Creator {
+		if userConnectedId != room.Creator {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "You are not allowed to do this action"})
 			return
 		}
 		// check if there still members in room
-		if len(room.Members) > 0 {
+		if len(room.Members) > 1 && room.Members[0] != room.Creator {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Please, delete all room members before"})
 			return
 		}

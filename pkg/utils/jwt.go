@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"time"
@@ -67,4 +68,22 @@ func VerifyToken(tokenString *string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+// get userID and username (logged in) from token cookie/headers
+func GetUserIDAndUsernameFromContext(c *gin.Context) (string, string, error) {
+	// Get token from cookie/headers
+	token, err := c.Cookie("token")
+	if err != nil {
+		token := c.GetHeader("Authorization")
+		if token == "" {
+			return "", "", err
+		}
+
+	}
+	claims, err := VerifyToken(&token)
+	if err != nil {
+		return "", "", err
+	}
+	return claims.UserID.Hex(), claims.Username, nil
 }
