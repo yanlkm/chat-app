@@ -1,6 +1,7 @@
 package room
 
 import (
+	"chat-app/pkg/user"
 	"chat-app/pkg/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -89,7 +90,7 @@ func GetRoomHandler(roomService RoomService) gin.HandlerFunc {
 }
 
 // get all members of a room
-func GetMembersOfRoom(roomService RoomService) gin.HandlerFunc {
+func GetRoomMembersHandler(roomService RoomService, userService user.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("id")
 		objectID, err := primitive.ObjectIDFromHex(roomID)
@@ -102,9 +103,29 @@ func GetMembersOfRoom(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get room"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"status": true, "members": room.Members})
-	}
+		// get all members id of a room in an array
+		membersID := room.Members
+		// get all users by id
+		var users []user.User
+		for i, memberID := range membersID {
+			// convert memberID string to string hex
+			memberObjectID, err := primitive.ObjectIDFromHex(memberID)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get members"})
+				return
+			}
+			userRetrieved, err := userService.GetUser(c.Request.Context(), memberObjectID)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get members"})
+				return
+			}
+			userRetrieved.Password = ""
+			users[i] = *userRetrieved
+		}
+		// return users
+		c.JSON(http.StatusOK, gin.H{"status": true, "users": users})
 
+	}
 }
 
 // add a member to a room
