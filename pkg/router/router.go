@@ -5,6 +5,7 @@ import (
 	"chat-app/pkg/middlewares"
 	"chat-app/pkg/room"
 	"chat-app/pkg/user"
+	"chat-app/pkg/websocket"
 	"github.com/gin-gonic/gin"
 )
 
@@ -53,6 +54,13 @@ func NewRouter(userService user.UserService, authService auth.AuthService, roomS
 		auth.LoginUserHandler(authService))
 	r.GET("auth/logout",
 		auth.LogoutUserHandler(authService))
+
+	// websocket route
+	r.GET("/ws", func(c *gin.Context) {
+		websocket.WebSocketHandler(c)
+	})
+	// starting handling messages
+	go websocket.HandleMessages()
 
 	return r
 }
