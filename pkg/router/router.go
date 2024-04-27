@@ -55,12 +55,15 @@ func NewRouter(userService user.UserService, authService auth.AuthService, roomS
 	r.GET("auth/logout",
 		auth.LogoutUserHandler(authService))
 
-	// websocket route
+	// websocket routes
 	r.GET("/ws", func(c *gin.Context) {
 		websocket.WebSocketHandler(c)
 	})
-	// starting handling messages
-	go websocket.HandleMessages()
+	// starting handling rooms
+	c := gin.Context{}
+	func(c *gin.Context) {
+		go websocket.HandleRooms(c, roomService)
+	}(&c)
 
 	return r
 }
