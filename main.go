@@ -3,6 +3,7 @@ package main
 import (
 	"chat-app/pkg/auth"
 	"chat-app/pkg/database"
+	"chat-app/pkg/message"
 	"chat-app/pkg/room"
 	"chat-app/pkg/router"
 	"chat-app/pkg/user"
@@ -30,6 +31,7 @@ func main() {
 	db := client.Database("chat_app")
 	userCollection := db.Collection("users")
 	roomCollection := db.Collection("rooms")
+	messageCollection := db.Collection("messages")
 
 	//debug
 	fmt.Println(userCollection)
@@ -43,9 +45,12 @@ func main() {
 	// Initialize room repository and service
 	roomRepo := room.NewRoomRepository(roomCollection)
 	roomService := room.NewRoomService(roomRepo)
+	// Initialize message repository and service
+	messageRepo := message.NewMessageRepository(messageCollection, roomCollection)
+	messageService := message.NewMessageService(messageRepo)
 
 	// Initialize router
-	r := router.NewRouter(userService, authService, roomService)
+	r := router.NewRouter(userService, authService, roomService, messageService)
 
 	// Start HTTP server
 	port := os.Getenv("PORT")

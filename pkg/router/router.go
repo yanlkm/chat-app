@@ -2,6 +2,7 @@ package router
 
 import (
 	"chat-app/pkg/auth"
+	"chat-app/pkg/message"
 	"chat-app/pkg/middlewares"
 	"chat-app/pkg/room"
 	"chat-app/pkg/user"
@@ -9,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(userService user.UserService, authService auth.AuthService, roomService room.RoomService) *gin.Engine {
+func NewRouter(userService user.UserService, authService auth.AuthService, roomService room.RoomService, messageService message.MessageService) *gin.Engine {
 
 	// Set Gin to default(debug) mode
 	r := gin.Default()
@@ -48,6 +49,14 @@ func NewRouter(userService user.UserService, authService auth.AuthService, roomS
 	// TODO: Add a route to delete a room
 	r.DELETE("rooms/delete/:id",
 		room.DeleteRoomHandler(roomService))
+
+	// Message routes
+	r.POST("messages",
+		message.CreateMessageHandler(messageService))
+	r.GET("messages/:id",
+		message.GetMessagesHandler(messageService))
+	r.DELETE("messages/:id",
+		message.DeleteMessageHandler(messageService))
 
 	// auth routes
 	r.POST("auth/login",

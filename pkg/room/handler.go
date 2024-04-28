@@ -17,6 +17,8 @@ func CreateRoomHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
 		}
+		// debug
+		fmt.Println(newRoom)
 		// check if name, creator and description are empty
 		if newRoom.Name == "" || newRoom.Description == "" || newRoom.Creator == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields are required"})
@@ -204,8 +206,7 @@ func DeleteRoomHandler(roomService RoomService) gin.HandlerFunc {
 
 		userConnectedId, _, err := utils.GetUserIDAndUsernameFromContext(c)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not room"})
-			return
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete room"})
 			return
 		}
 

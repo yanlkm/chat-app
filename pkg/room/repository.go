@@ -37,6 +37,7 @@ func (r *roomRepository) CreateRoom(ctx context.Context, room *Room) (*Room, err
 		Name:        room.Name,
 		Description: room.Description,
 		Creator:     room.Creator,
+		Messages:    []string{},
 		Hashtags:    []string{"#room"},
 		Members:     []string{room.Creator},
 	}
