@@ -1,7 +1,6 @@
 package user
 
 import (
-	"github.com/dchest/validator"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -17,7 +16,7 @@ func CreateUserHandler(userService UserService) gin.HandlerFunc {
 			return
 		}
 		//check if user has bad input
-		if newUser.Username == "" || newUser.Password == "" || newUser.Email == "" {
+		if newUser.Username == "" || newUser.Password == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields are required"})
 			return
 		}
@@ -44,17 +43,6 @@ func CreateUserHandler(userService UserService) gin.HandlerFunc {
 		// check if password has at least 6 characters
 		if len(newUser.Password) < 6 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Password must have at least 6 characters"})
-			return
-		}
-
-		// check if email is valid
-		if !validator.IsValidEmail(newUser.Email) {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid email address"})
-			return
-		}
-		// check if email is unique
-		if err := userService.CheckEmail(c.Request.Context(), newUser.Email); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Email already exists"})
 			return
 		}
 
