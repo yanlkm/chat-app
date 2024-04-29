@@ -1,13 +1,14 @@
 package websocket
 
 import (
+	"chat-app/pkg/message"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 // WebSocketHandler handles WebSocket connections for a specific room
-func WebSocketHandler(c *gin.Context) {
+func WebSocketHandler(c *gin.Context, messageService message.MessageService) {
 	roomID := c.Query("id")
 
 	roomsMu.Lock()
@@ -32,6 +33,20 @@ func WebSocketHandler(c *gin.Context) {
 	for {
 		var msg MessageSocket
 		err := ws.ReadJSON(&msg)
+		if err != nil {
+			fmt.Println(err)
+			roomsMu.Lock()
+			delete(room.Members, ws)
+			roomsMu.Unlock()
+			break
+		}
+		// save the message to the database
+		messageDB := message.Message{
+			RoomID:   roomID,
+			Username: msg.Username,
+			Content:  msg.Message,
+		}
+		_, err = messageService.CreateMessage(c.Request.Context(), &messageDB)
 		if err != nil {
 			fmt.Println(err)
 			roomsMu.Lock()

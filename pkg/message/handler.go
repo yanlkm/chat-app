@@ -23,15 +23,15 @@ func CreateMessageHandler(messageService MessageService) gin.HandlerFunc {
 		}
 
 		// check if userConnected is the one who sends a creation message request
-		_, usernameConnected, errConnection := utils.GetUserIDAndUsernameFromContext(c)
-		if errConnection != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not send a message"})
-			return
-		}
-		if message.Username != usernameConnected {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not send a message"})
-			return
-		}
+		//_, usernameConnected, errConnection := utils.GetUserIDAndUsernameFromContext(c)
+		//if errConnection != nil {
+		//	c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not send a message"})
+		//	return
+		//}
+		//if message.Username != usernameConnected {
+		//	c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not send a message"})
+		//	return
+		//}
 
 		// check if roomID is a valid objectID, and convert it to an objectID
 		_, err := primitive.ObjectIDFromHex(message.RoomID)
