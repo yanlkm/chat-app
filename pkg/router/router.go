@@ -2,6 +2,7 @@ package router
 
 import (
 	"chat-app/pkg/auth"
+	"chat-app/pkg/code"
 	"chat-app/pkg/message"
 	"chat-app/pkg/middlewares"
 	"chat-app/pkg/room"
@@ -10,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func NewRouter(userService user.UserService, authService auth.AuthService, roomService room.RoomService, messageService message.MessageService) *gin.Engine {
+func NewRouter(userService user.UserService, codeService code.CodeService, authService auth.AuthService, roomService room.RoomService, messageService message.MessageService) *gin.Engine {
 
 	// Set Gin to default(debug) mode
 	r := gin.Default()
@@ -21,7 +22,7 @@ func NewRouter(userService user.UserService, authService auth.AuthService, roomS
 	r.GET("users/:id", middlewares.AuthMiddleware(),
 		user.GetUserHandler(userService))
 	r.POST("users",
-		user.CreateUserHandler(userService))
+		user.CreateUserHandler(userService, codeService))
 	r.PUT("users/:id",
 		middlewares.AuthMiddleware(),
 		user.UpdateUserHandler(userService))
@@ -31,6 +32,10 @@ func NewRouter(userService user.UserService, authService auth.AuthService, roomS
 	r.DELETE("users/:id",
 		middlewares.AuthMiddleware(),
 		user.DeleteUserHandler(userService))
+
+	//code route
+	r.POST("codes",
+		code.CreateCodeHandler(codeService))
 
 	// Room routes
 	r.GET("rooms",

@@ -1,6 +1,7 @@
 package user
 
 import (
+	"chat-app/pkg/code"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -8,50 +9,71 @@ import (
 )
 
 // CreateUserHandler creates a new user.
-func CreateUserHandler(userService UserService) gin.HandlerFunc {
+func CreateUserHandler(userService UserService, codeService code.CodeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var newUser User
 		if err := c.ShouldBindJSON(&newUser); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
 		}
-		//check if user has bad input
+		// Check if user has bad input
 		if newUser.Username == "" || newUser.Password == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields are required"})
 			return
 		}
 
-		//check if username is not too long
+		// Check if username is not too long
 		if len(newUser.Username) > 10 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Username is too long"})
 			return
 		}
 
-		//check if username is not too short
+		// Check if username is not too short
 		if len(newUser.Username) < 3 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Username is too short"})
 			return
 		}
 
-		// check if username respects convention with a regex check
+		// Check if username respects convention with a regex check
 		usernameConvention := "^[a-zA-Z0-9_]*$"
 		if re, _ := regexp.Compile(usernameConvention); !re.Match([]byte(newUser.Username)) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username"})
 			return
 		}
 
-		// check if password has at least 6 characters
+		// Check if password has at least 6 characters
 		if len(newUser.Password) < 6 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Password must have at least 6 characters"})
 			return
 		}
 
-		// check if username is unique
+		// Check if the provided code is valid
+		if newUser.Code != "" {
+			isValid, err := codeService.CheckCode(c.Request.Context(), &newUser.Code)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check code"})
+				return
+			}
+			if !isValid {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid code"})
+				return
+			}
+			// Mark the code as used
+			if err := codeService.UpdateCode(c.Request.Context(), &newUser.Code); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update code"})
+				return
+			}
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Code is required"})
+			return
+		}
+
+		// Check if username is unique
 		if err := userService.CheckUsername(c.Request.Context(), newUser.Username); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
 			return
 		}
-		// create user
+		// Create user
 		if err := userService.CreateUser(c.Request.Context(), &newUser); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 			return

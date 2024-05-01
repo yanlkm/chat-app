@@ -9,6 +9,7 @@ type User struct {
 	Password     string    `json:"password,omitempty" bson:"password,omitempty"`
 	CreatedAt    time.Time `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
 	UpdatedAt    time.Time `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
+	Code         string    `json:"code,omitempty" bson:"code,omitempty"`
 	JoinedSalons []string  `json:"joinedSalons,omitempty" bson:"joinedSalons,omitempty"`
 }
 

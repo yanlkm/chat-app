@@ -3,7 +3,6 @@ package room
 import (
 	"chat-app/pkg/user"
 	"chat-app/pkg/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -17,8 +16,6 @@ func CreateRoomHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
 		}
-		// debug
-		fmt.Println(newRoom)
 		// check if name, creator and description are empty
 		if newRoom.Name == "" || newRoom.Description == "" || newRoom.Creator == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields are required"})
@@ -147,8 +144,6 @@ func AddMemberToRoom(roomService RoomService) gin.HandlerFunc {
 		}
 		memberObjectID, err := primitive.ObjectIDFromHex(member.ID)
 		if err != nil {
-			// debug
-			fmt.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "The member does not exist"})
 			return
 		}
@@ -200,7 +195,6 @@ func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
 	}
 }
 
-// TODO : Add a handler to delete a room
 func DeleteRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
