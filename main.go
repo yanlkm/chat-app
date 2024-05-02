@@ -48,7 +48,7 @@ func main() {
 	authRepo := auth.NewAuthRepository(userCollection)
 	authService := auth.NewAuthService(authRepo)
 	// Initialize room repository and service
-	roomRepo := room.NewRoomRepository(roomCollection)
+	roomRepo := room.NewRoomRepository(roomCollection, userCollection)
 	roomService := room.NewRoomService(roomRepo)
 	// Initialize message repository and service
 	messageRepo := message.NewMessageRepository(messageCollection, roomCollection)

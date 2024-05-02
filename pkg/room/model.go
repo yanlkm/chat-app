@@ -12,10 +12,9 @@ type Room struct {
 	Creator     string             `json:"creator,omitempty" bson:"creator,omitempty"`
 	Members     []string           `json:"members,omitempty" bson:"members,omitempty"`
 	Hashtags    []string           `json:"hashtags,omitempty" bson:"hashtags,omitempty"`
-	// TODO: Add messages field
-	Messages  []string  `json:"messages,omitempty" bson:"messages,omitempty"`
-	CreatedAt time.Time `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
-	UpdatedAt time.Time `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
+	Messages    []string           `json:"messages,omitempty" bson:"messages,omitempty"`
+	CreatedAt   time.Time          `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
+	UpdatedAt   time.Time          `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
 }
 
 // member of a room
