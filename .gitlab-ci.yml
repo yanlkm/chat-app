@@ -15,7 +15,7 @@ build_image:
   stage: build
   image: docker:latest
   script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u yanlkm --password-stdin
+    - echo $CI_REGISTRY_PASSWORD | docker login -u yanlkm --password-stdin
     - docker pull yanlkm/chat-app-conatiners:latest
     - docker build -t yanlkm/chat-app-containers:latest .
     - docker push yanlkm/chat-app-containers:latest
