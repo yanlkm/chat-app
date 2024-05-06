@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb-container
+    ports:
+      - "27017:27017"
+
+  chat-app:
+    image: chat-app
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
