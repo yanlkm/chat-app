@@ -1,4 +1,5 @@
 stages:
+  - dockerize
   - build
   - test
   - deploy
@@ -11,19 +12,30 @@ variables:
 services:
   - docker:dind
 
+dockerize_pipeline:
+  stage: dockerize
+  script:
+    - docker build -t yanlkm/chat-app-pipeline:latest .
+    - docker push yanlkm/chat-app-pipeline:latest
+
 build_image:
   stage: build
+  image: docker:latest
   script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - docker pull yanlkm/chat-app-pipeline:latest
     - docker build -t yanlkm/chat-app-containers:latest .
     - docker push yanlkm/chat-app-containers:latest
 
 test_image:
   stage: test
+  image: yanlkm/chat-app-containers:latest
   script:
-    - docker run yanlkm/chat-app-containers:latest go test ./...
+    - go test ./...
 
 deploy_image:
   stage: deploy
+  image: yanlkm/chat-app-containers:latest
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
     - docker push yanlkm/chat-app-containers:latest
