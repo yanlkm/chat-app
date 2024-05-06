@@ -1,0 +1,28 @@
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+
+services:
+  - docker:19.03.12-dind
+
+build_image:
+  stage: build
+  script:
+    - docker build -t yanlkm/chat-app-containers:latest .
+
+test_image:
+  stage: test
+  script:
+    - docker run yanlkm/chat-app-containers:latest go test ./...
+
+deploy_image:
+  stage: deploy
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+    - docker push yanlkm/chat-app-containers:latest
+  only:
+    - master
