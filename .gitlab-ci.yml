@@ -10,35 +10,33 @@ variables:
   DOCKER_DRIVER: "overlay2"
 
 services:
-  - docker:ruby.2.7
+  - name: docker:latest
 
 dockerize_pipeline:
   stage: dockerize
-  image: docker:ruby.2.7
   script:
-    - docker build -t yanlkm/chat-app-pipeline:latest .
-    - docker push yanlkm/chat-app-pipeline:latest
+    - docker build -t yanlkm/chat-app-containers:latest .
+    - docker push yanlkm/chat-app-containers:latest
 
 build_image:
   stage: build
-  image: docker:latest
   script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-    - docker pull yanlkm/chat-app-pipeline:latest
-    - docker build -t yanlkm/chat-app-containers:latest .
+    - docker pull yanlkm/chat-app-containers:latest
+    - docker run --rm -v /var/run/docker.sock:/var/run/docker.sock yanlkm/chat-app-containers:latest docker build -t yanlkm/chat-app-containers:latest .
     - docker push yanlkm/chat-app-containers:latest
 
 test_image:
   stage: test
-  image: yanlkm/chat-app-containers:latest
   script:
-    - go test ./...
+    - docker pull yanlkm/chat-app-containers:latest
+    - docker run --rm yanlkm/chat-app-containers:latest go test ./...
 
 deploy_image:
   stage: deploy
-  image: yanlkm/chat-app-containers:latest
   script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-    - docker push yanlkm/chat-app-containers:latest
+    - docker login -u yanlkm -p $CI_REGISTRY_PASSWORD
+    - docker pull yanlkm/chat-app-containers:latest
+    - docker run --rm yanlkm/chat-app-containers:latest docker push yanlkm/chat-app-containers:latest
   only:
     - master
