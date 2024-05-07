@@ -51,7 +51,6 @@ func NewRouter(userService user.UserService, codeService code.CodeService, authS
 	// get all members of a room
 	r.GET("rooms/members/:id",
 		room.GetRoomMembersHandler(roomService, userService))
-	// TODO: Add a route to delete a room
 	r.DELETE("rooms/delete/:id",
 		room.DeleteRoomHandler(roomService))
 
