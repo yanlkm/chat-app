@@ -1,4 +1,5 @@
 stages:
+  - pre-build
   - build
 
 variables:
@@ -10,7 +11,7 @@ services:
   - docker:dind
 
 build_images:
-  stage: build
+  stage: pre-build
   image: docker:dind
   script:
     - echo "$CI_REGISTRY_TOKEN" | docker login -u yanlkm --password-stdin
