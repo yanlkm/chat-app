@@ -11,6 +11,7 @@ services:
 
 build_image:
   stage: build
+  image: docker:dind
   script:
     - echo "$CI_REGISTRY_TOKEN" | docker login -u yanlkm --password-stdin
     - docker pull yanlkm/chat-app-continers:latest
