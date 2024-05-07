@@ -14,6 +14,7 @@ build_image:
   image: docker:dind
   script:
     - echo "$CI_REGISTRY_TOKEN" | docker login -u yanlkm --password-stdin
+    - docker info
     - docker pull yanlkm/chat-app-continers:latest
     - docker build -t yanlkm/chat-app-containers:latest .
     - docker push yanlkm/chat-app-containers:latest
