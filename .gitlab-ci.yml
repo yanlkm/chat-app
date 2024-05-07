@@ -34,4 +34,4 @@ build_compose:
     # Create and push the compose with chat-app and mongo images
     - echo "$CI_REGISTRY_TOKEN" | docker login -u yanlkm --password-stdin
     - docker-compose -f compose.yaml build
-    - docker-compose -f compose.yaml push
+    - docker-compose -f compose.yaml push yanlkm/containers:latest
