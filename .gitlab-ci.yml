@@ -1,0 +1,19 @@
+stages:
+  - build
+
+variables:
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_DRIVER: "overlay2"
+
+services:
+  - docker:dind
+
+build_image:
+  stage: build
+  image: docker:dind
+  script:
+    - echo "$CI_REGISTRY_TOKEN" | docker login -u yanlkm --password-stdin
+    - docker pull docker.io/yanlkm/chat-app-containers:latest
+    - docker build -t yanlkm/chat-app-containers:latest .
+    - docker push yanlkm/chat-app-containers:latest
