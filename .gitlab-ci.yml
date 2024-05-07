@@ -6,15 +6,12 @@ variables:
   DOCKER_HOST: "tcp://docker:2375"
   DOCKER_DRIVER: "overlay2"
 
-services:
-  - docker:latest
-
 build_image:
   stage: build
-  image: docker:dind
   script:
     - echo "$CI_REGISTRY_TOKEN" | docker login -u yanlkm --password-stdin
-    - docker info
     - docker pull yanlkm/chat-app-continers:latest
     - docker build -t yanlkm/chat-app-containers:latest .
     - docker push yanlkm/chat-app-containers:latest
+  tags:
+    - docker-runner
