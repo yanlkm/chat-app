@@ -1,7 +1,5 @@
 stages:
   - build
-  - test
-  - deploy
 
 variables:
   DOCKER_TLS_CERTDIR: "/certs"
@@ -15,24 +13,7 @@ build_image:
   stage: build
   image: docker:latest
   script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u yanlkm
+    - echo "$CI_REGISTRY_TOKEN" | docker login -u yanlkm
     - docker pull yanlkm/chat-app-continers:latest
     - docker build -t yanlkm/chat-app-containers:latest .
     - docker push yanlkm/chat-app-containers:latest
-
-test_image:
-  stage: test
-  image: docker:latest
-  script:
-    - docker pull yanlkm/chat-app-containers:latest
-    - docker run yanlkm/chat-app-containers:latest go test ./...
-
-deploy_image:
-  stage: deploy
-  image: docker:latest
-  script:
-    - echo "$CI_REGISTRY_PASSWORD" | docker login -u yanlkm --password-stdin
-    - docker pull yanlkm/chat-app-containers:latest
-    - docker run -v /var/run/docker.sock:/var/run/docker.sock yanlkm/chat-app-pipeline:latest sh -c "docker pull yanlkm/chat-app-containers:latest && docker tag yanlkm/chat-app-containers:latest yanlkm/chat-app-containers:latest && docker push yanlkm/chat-app-containers:latest"
-  only:
-    - master
