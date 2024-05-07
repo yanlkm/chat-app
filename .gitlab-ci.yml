@@ -9,13 +9,29 @@ variables:
 services:
   - docker:dind
 
-build_image:
+build_images:
   stage: build
   image: docker:dind
   script:
     - echo "$CI_REGISTRY_TOKEN" | docker login -u yanlkm --password-stdin
-    - docker compose build chat-app
-    - docker tag chat-app:latest yanlkm/chat-app-containers:latest
-    - docker pull docker.io/yanlkm/chat-app-containers:latest
-    - docker build -t yanlkm/chat-app-containers:latest .
-    - docker push yanlkm/chat-app-containers:latest
+    # Build chat-app image from Dockerfile
+    - docker build -t chat-app .
+    # Tag chat-app image for pushing to Docker Hub
+    - docker tag chat-app:latest yanlkm/chat-app:latest
+    # Push chat-app image to Docker Hub
+    - docker push yanlkm/chat-app:latest
+    # Pull MongoDB image
+    - docker pull mongo:latest
+    # Tag MongoDB image for pushing to Docker Hub
+    - docker tag mongo:latest yanlkm/mongo:latest
+    # Push MongoDB image to Docker Hub
+    - docker push yanlkm/mongo:latest
+
+build_compose:
+  stage: build
+  image: docker:dind
+  script:
+    # Create and push the compose with chat-app and mongo images
+    - echo "$CI_REGISTRY_TOKEN" | docker login -u yanlkm --password-stdin
+    - docker-compose -f compose.yaml build
+    - docker-compose -f compose.yaml push
