@@ -12,6 +12,7 @@ import (
 	"github.com/joho/godotenv"
 	"net/http"
 	"os"
+	"strconv"
 )
 
 func main() {
@@ -58,9 +59,9 @@ func main() {
 	r := router.NewRouter(userService, codeService, authService, roomService, messageService)
 
 	// Start HTTP server
-	port := os.Getenv("PORT")
+	port := 8080
 	fmt.Printf("Server started on %s", port)
-	err = http.ListenAndServe(port, r)
+	err = http.ListenAndServe(strconv.Itoa(port), r)
 	if err != nil {
 		fmt.Println("Failed to start server: %v", err)
 	}
