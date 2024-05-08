@@ -58,9 +58,9 @@ func main() {
 	r := router.NewRouter(userService, codeService, authService, roomService, messageService)
 
 	// Start HTTP server
-	port := 8080
+	port := os.Getenv("PORT")
 	fmt.Printf("Server started on %s", port)
-	err = http.ListenAndServe(fmt.Sprintf(":%d", port), r)
+	err = http.ListenAndServe(os.Getenv("BASE_URL"), r)
 	if err != nil {
 		fmt.Println("Failed to start server: %v", err)
 	}
