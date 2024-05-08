@@ -12,7 +12,6 @@ import (
 	"github.com/joho/godotenv"
 	"net/http"
 	"os"
-	"strconv"
 )
 
 func main() {
