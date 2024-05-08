@@ -37,4 +37,3 @@ build_compose:
     - docker pull yanlkm/chat-app:latest
     - docker pull yanlkm/mongo:latest
     - docker-compose -f compose.yaml build
-    - docker-compose -f compose.yaml up 
