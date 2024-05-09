@@ -10,6 +10,7 @@ import (
 	"chat-app/pkg/user"
 	"fmt"
 	"github.com/joho/godotenv"
+	"log"
 	"net/http"
 	"os"
 )
@@ -62,6 +63,8 @@ func main() {
 	fmt.Printf("Server started on %s", port)
 	err = http.ListenAndServe(port, r)
 	if err != nil {
-		fmt.Println("Failed to start server: %v", err)
+		fmt.Printf("Failed to start server: %v\n", err)
+		// debug
+		log.Fatal(err)
 	}
 }
