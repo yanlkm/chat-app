@@ -25,12 +25,6 @@ build_images:
     - docker tag chat-app:latest yanlkm/chat-app:latest
     # Push chat-app image to Docker Hub
     - docker push yanlkm/chat-app:latest
-    # Pull MongoDB image
-    - docker pull mongo:latest
-    # Tag MongoDB image for pushing to Docker Hub
-    - docker tag mongo:latest yanlkm/mongo:latest
-    # Push MongoDB image to Docker Hub
-    - docker push yanlkm/mongo:latest
 
 build_compose:
   stage: build
