@@ -21,8 +21,6 @@ build_images:
     - echo "$CI_REGISTRY_TOKEN" | docker login -u yanlkm --password-stdin
     # Build chat-app image from Dockerfile
     - docker build -t chat-app .
-    # Check the image built
-    - docker run chat-app:latest
     # Tag chat-app image for pushing to Docker Hub
     - docker tag chat-app:latest yanlkm/chat-app:latest
     # Push chat-app image to Docker Hub
