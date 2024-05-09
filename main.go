@@ -60,7 +60,7 @@ func main() {
 	// Start HTTP server
 	port := os.Getenv("PORT")
 	fmt.Printf("Server started on %s", port)
-	err = http.ListenAndServe("localhost"+port, r)
+	err = http.ListenAndServe(port, r)
 	if err != nil {
 		fmt.Println("Failed to start server: %v", err)
 	}
