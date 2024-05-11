@@ -47,6 +47,11 @@ func CreateUserHandler(userService UserService, codeService code.CodeService) gi
 			return
 		}
 
+		// Check if username is unique
+		if err := userService.CheckUsername(c.Request.Context(), newUser.Username); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
+			return
+		}
 		// Check if the provided code is valid
 		if newUser.Code != "" {
 			isValid, err := codeService.CheckCode(c.Request.Context(), &newUser.Code)
@@ -68,11 +73,6 @@ func CreateUserHandler(userService UserService, codeService code.CodeService) gi
 			return
 		}
 
-		// Check if username is unique
-		if err := userService.CheckUsername(c.Request.Context(), newUser.Username); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
-			return
-		}
 		// Create user
 		if err := userService.CreateUser(c.Request.Context(), &newUser); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
