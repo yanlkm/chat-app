@@ -14,6 +14,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		token, err := c.Cookie("token")
 		if err != nil {
 			token := c.GetHeader("Authorization")
+			// debug
+			fmt.Println("Token from header: ", token)
 			if token == "" {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "1 - Unauthorized"})
 				c.Abort()
@@ -25,7 +27,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Verify and decode token
 		claims, err := utils.VerifyToken(&token)
 		if err != nil {
-			fmt.Println("Error: ", err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "2 - Unauthorized"})
 			c.Abort()
 			return

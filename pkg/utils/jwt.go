@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -58,6 +59,7 @@ func VerifyToken(tokenString *string) (*Claims, error) {
 
 	// Check for errors during token parsing or verification.
 	if err != nil {
+		fmt.Println("Error parsing token : ", token)
 		return nil, err
 	}
 

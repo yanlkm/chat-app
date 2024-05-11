@@ -68,7 +68,6 @@ func LogoutUserHandler(authService AuthService) gin.HandlerFunc {
 		// Verify and decode token
 		claims, err := utils.VerifyToken(&token)
 		if err != nil {
-			fmt.Println("Error: ", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Token", "message": err.Error()})
 			return
 		}
