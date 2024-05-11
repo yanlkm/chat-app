@@ -20,7 +20,8 @@ func AuthMiddleware() gin.HandlerFunc {
 				return
 			}
 		}
-
+		// debug
+		fmt.Println("Token: ", token)
 		// Verify and decode token
 		claims, err := utils.VerifyToken(&token)
 		if err != nil {
