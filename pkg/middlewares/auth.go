@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"chat-app/pkg/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -11,19 +10,17 @@ import (
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get token from cookie
+		var token string
 		token, err := c.Cookie("token")
 		if err != nil {
-			token := c.GetHeader("Authorization")
-			// debug
-			fmt.Println("Token from header: ", token)
+			token = c.GetHeader("Authorization")
 			if token == "" {
 				c.JSON(http.StatusUnauthorized, gin.H{"error": "1 - Unauthorized"})
 				c.Abort()
 				return
 			}
 		}
-		// debug
-		fmt.Println("Token: ", token)
+
 		// Verify and decode token
 		claims, err := utils.VerifyToken(&token)
 		if err != nil {
