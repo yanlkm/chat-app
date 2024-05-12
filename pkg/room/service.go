@@ -9,6 +9,7 @@ type RoomService interface {
 	CreateRoom(ctx context.Context, room *Room) (*Room, error)
 	CheckName(ctx context.Context, name string) error
 	GetRoom(ctx context.Context, roomID primitive.ObjectID) (*Room, error)
+	GetUserRooms(ctx context.Context, userID primitive.ObjectID) ([]Room, error)
 	GetAllRooms(ctx context.Context) ([]Room, error)
 	AddMember(ctx context.Context, roomID primitive.ObjectID, memberID primitive.ObjectID) (*Room, error)
 	RemoveMember(ctx context.Context, roomID primitive.ObjectID, memberID primitive.ObjectID) (*Room, error)
@@ -31,7 +32,9 @@ func (r *roomService) CreateRoom(ctx context.Context, room *Room) (*Room, error)
 func (r *roomService) GetRoom(ctx context.Context, roomID primitive.ObjectID) (*Room, error) {
 	return r.repo.GetRoom(ctx, roomID)
 }
-
+func (r *roomService) GetUserRooms(ctx context.Context, userID primitive.ObjectID) ([]Room, error) {
+	return r.repo.GetUserRooms(ctx, userID)
+}
 func (r *roomService) GetAllRooms(ctx context.Context) ([]Room, error) {
 	return r.repo.GetAllRooms(ctx)
 }

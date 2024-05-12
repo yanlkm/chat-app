@@ -42,6 +42,8 @@ func NewRouter(userService user.UserService, codeService code.CodeService, authS
 		room.GetRoomsHandler(roomService))
 	r.GET("rooms/:id",
 		room.GetRoomHandler(roomService))
+	r.GET("rooms/user/:id",
+		room.GetUserRoomsHandler(roomService))
 	r.POST("rooms",
 		room.CreateRoomHandler(roomService))
 	r.PUT("rooms/add/:id",

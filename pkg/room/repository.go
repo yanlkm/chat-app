@@ -14,6 +14,7 @@ type RoomRepository interface {
 	CreateRoom(ctx context.Context, room *Room) (*Room, error)
 	CheckName(ctx context.Context, name string) error
 	GetRoom(ctx context.Context, roomID primitive.ObjectID) (*Room, error)
+	GetUserRooms(ctx context.Context, userID primitive.ObjectID) ([]Room, error)
 	GetAllRooms(ctx context.Context) ([]Room, error)
 	AddMember(ctx context.Context, roomID primitive.ObjectID, memberID primitive.ObjectID) (*Room, error)
 	RemoveMember(ctx context.Context, roomID primitive.ObjectID, memberID primitive.ObjectID) (*Room, error)
@@ -65,6 +66,25 @@ func (r *roomRepository) GetRoom(ctx context.Context, roomID primitive.ObjectID)
 		return nil, err
 	}
 	return &room, nil
+}
+
+func (r *roomRepository) GetUserRooms(ctx context.Context, userID primitive.ObjectID) ([]Room, error) {
+	// check if userCheck exists in users
+	var userCheck user.User
+	errCheckUser := r.collectionUsers.FindOne(ctx, bson.D{{"_id", userID}}).Decode(&userCheck)
+	if errCheckUser != nil {
+		return nil, errors.New("User does not exist")
+	}
+	cursor, err := r.collection.Find(ctx, bson.D{{"members", userID.Hex()}})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	var rooms []Room
+	if err = cursor.All(ctx, &rooms); err != nil {
+		return nil, err
+	}
+	return rooms, nil
 }
 
 func (r *roomRepository) GetAllRooms(ctx context.Context) ([]Room, error) {

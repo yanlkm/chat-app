@@ -88,6 +88,24 @@ func GetRoomHandler(roomService RoomService) gin.HandlerFunc {
 	}
 }
 
+func GetUserRoomsHandler(roomService RoomService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.Param("id")
+		objectID, err := primitive.ObjectIDFromHex(userID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get rooms"})
+			return
+		}
+		rooms, err := roomService.GetUserRooms(c.Request.Context(), objectID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"status": true, "rooms": rooms})
+	}
+
+}
+
 // get all members of a room
 func GetRoomMembersHandler(roomService RoomService, userService user.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
