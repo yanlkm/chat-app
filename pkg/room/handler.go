@@ -66,7 +66,7 @@ func CreateRoomHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create room"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"status": true, "room": room})
+		c.JSON(http.StatusOK, gin.H{room})
 
 	}
 }
@@ -84,7 +84,7 @@ func GetRoomHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get room"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"status": true, "room": room})
+		c.JSON(http.StatusOK, gin.H{room})
 	}
 }
 
@@ -101,7 +101,7 @@ func GetUserRoomsHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"status": true, "rooms": rooms})
+		c.JSON(http.StatusOK, gin.H{rooms})
 	}
 
 }
@@ -141,7 +141,7 @@ func GetRoomMembersHandler(roomService RoomService, userService user.UserService
 			users = append(users, *userRetrieved)
 		}
 		// return users
-		c.JSON(http.StatusOK, gin.H{"status": true, "users": users})
+		c.JSON(http.StatusOK, gin.H{users})
 
 	}
 }
@@ -170,7 +170,7 @@ func AddMemberToRoom(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not add member"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"status": true, "room": room})
+		c.JSON(http.StatusOK, gin.H{room})
 	}
 }
 
@@ -199,7 +199,7 @@ func RemoveMemberFromRoom(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not remove member"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"status": true, "room": room})
+		c.JSON(http.StatusOK, gin.H{room})
 	}
 }
 func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
@@ -209,7 +209,7 @@ func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{"status": true, "rooms": rooms})
+		c.JSON(http.StatusOK, gin.H{rooms})
 	}
 }
 
