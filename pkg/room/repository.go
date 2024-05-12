@@ -90,6 +90,11 @@ func (r *roomRepository) AddMember(ctx context.Context, roomID primitive.ObjectI
 		return nil, errors.New("Member does not exist")
 	}
 	var room Room
+	// check if member exists in room
+	errCheck := r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"members", memberID.Hex()}}).Decode(&room)
+	if errCheck == nil {
+		return nil, errors.New("Member already added to room")
+	}
 	// add room to rooms fields of user
 	_, err := r.collectionUsers.UpdateOne(ctx,
 		bson.D{{"_id", memberID}},
@@ -97,13 +102,12 @@ func (r *roomRepository) AddMember(ctx context.Context, roomID primitive.ObjectI
 	if err != nil {
 		return nil, err
 	}
-	// check if member exists
-	errCheck := r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"members", memberID.Hex()}}).Decode(&room)
-	if errCheck == nil {
-		return nil, errors.New("Member already added to room")
-	}
 	_, err = r.collection.UpdateOne(ctx, bson.D{{"_id", roomID}}, bson.D{{"$push", bson.D{{"members", memberID.Hex()}}}})
 	if err != nil {
+		// delete last room from rooms fields of user
+		_, err = r.collectionUsers.UpdateOne(ctx,
+			bson.D{{"_id", memberID}},
+			bson.D{{"$pull", bson.D{{"joinedRooms", roomID.Hex()}}}})
 		return nil, err
 	}
 	return r.GetRoom(ctx, roomID)
@@ -131,6 +135,10 @@ func (r *roomRepository) RemoveMember(ctx context.Context, roomID primitive.Obje
 	}
 	_, err = r.collection.UpdateOne(ctx, bson.D{{"_id", roomID}}, bson.D{{"$pull", bson.D{{"members", memberID.Hex()}}}})
 	if err != nil {
+		// add room to rooms fields of user
+		_, err = r.collectionUsers.UpdateOne(ctx,
+			bson.D{{"_id", memberID}},
+			bson.D{{"$push", bson.D{{"joinedRooms", roomID.Hex()}}}})
 		return nil, err
 	}
 	return r.GetRoom(ctx, roomID)
