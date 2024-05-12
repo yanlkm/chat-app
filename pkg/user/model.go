@@ -10,7 +10,7 @@ type User struct {
 	CreatedAt    time.Time `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
 	UpdatedAt    time.Time `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
 	Code         string    `json:"code,omitempty" bson:"code,omitempty"`
-	JoinedSalons []string  `json:"joinedSalons,omitempty" bson:"joinedSalons,omitempty"`
+	JoinedSalons []string  `json:"joinedSalons,omitempty" bson:"joinedRooms,omitempty"`
 }
 
 type UserUpdate struct {
