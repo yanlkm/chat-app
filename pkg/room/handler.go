@@ -66,7 +66,7 @@ func CreateRoomHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create room"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{room})
+		c.JSON(http.StatusOK, gin.H{"room": room})
 
 	}
 }
@@ -84,7 +84,7 @@ func GetRoomHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get room"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{room})
+		c.JSON(http.StatusOK, gin.H{"room": room})
 	}
 }
 
@@ -101,7 +101,7 @@ func GetUserRoomsHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{rooms})
+		c.JSON(http.StatusOK, gin.H{"rooms": rooms})
 	}
 
 }
@@ -141,7 +141,7 @@ func GetRoomMembersHandler(roomService RoomService, userService user.UserService
 			users = append(users, *userRetrieved)
 		}
 		// return users
-		c.JSON(http.StatusOK, gin.H{users})
+		c.JSON(http.StatusOK, gin.H{"users": users})
 
 	}
 }
@@ -170,7 +170,7 @@ func AddMemberToRoom(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not add member"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{room})
+		c.JSON(http.StatusOK, gin.H{"room": room})
 	}
 }
 
@@ -199,7 +199,7 @@ func RemoveMemberFromRoom(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not remove member"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{room})
+		c.JSON(http.StatusOK, gin.H{"room": room})
 	}
 }
 func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
@@ -209,7 +209,7 @@ func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
 			return
 		}
-		c.JSON(http.StatusOK, gin.H{rooms})
+		c.JSON(http.StatusOK, gin.H{"status": true, "rooms": rooms})
 	}
 }
 
