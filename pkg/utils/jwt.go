@@ -27,7 +27,7 @@ func GenerateToken(username *string, userID *primitive.ObjectID) (string, error)
 		UserID:   *userID,
 		Username: *username,
 		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(), // Token expires in 24 hours
+			ExpiresAt: time.Now().Add(time.Hour * 24 * 30).Unix(), // Token expires in 24 hours
 			Subject:   "authentication",
 		},
 	}
