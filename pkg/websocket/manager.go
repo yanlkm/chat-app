@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	"net/http"
 	"sync"
+	"time"
 )
 
 // Room struct from the websocket package
@@ -18,9 +19,10 @@ type RoomSocket struct {
 
 // Message struct from the websocket package
 type MessageSocket struct {
-	RoomID   string `json:"roomId,omitempty"`
-	Username string `json:"username,omitempty"`
-	Message  string `json:"message,omitempty"`
+	RoomID    string    `json:"roomId,omitempty"`
+	Username  string    `json:"username,omitempty"`
+	Message   string    `json:"message,omitempty"`
+	CreatedAt time.Time `json:"createdAt,omitempty"`
 }
 
 var (
