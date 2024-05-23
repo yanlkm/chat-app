@@ -73,21 +73,30 @@ func LogoutUserHandler(authService AuthService) gin.HandlerFunc {
 		// Retrieve JWT token from header
 		token := c.Request.Header.Get("Authorization")
 		if token == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid token"})
+			// Invalidate token by removing it from cookie and header
+			c.SetCookie("token", "", -1, "/", "localhost", false, true)
+			c.Header("Authorization", "")
+			c.JSON(http.StatusOK, gin.H{"error": "Invalid token"})
 			return
 		}
 
 		// Verify and decode token
 		claims, err := utils.VerifyToken(&token)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Token", "message": err.Error()})
+			// Invalidate token by removing it from cookie and header
+			c.SetCookie("token", "", -1, "/", "localhost", false, true)
+			c.Header("Authorization", "")
+			c.JSON(http.StatusOK, gin.H{"error": "Invalid Token", "message": err.Error()})
 			return
 		}
 
 		// Call logout service
 		err = authService.LogoutUser(c.Request.Context(), &claims.UserID)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to logout"})
+			// Invalidate token by removing it from cookie and header
+			c.SetCookie("token", "", -1, "/", "localhost", false, true)
+			c.Header("Authorization", "")
+			c.JSON(http.StatusOK, gin.H{"error": "Failed to logout"})
 			return
 		}
 
