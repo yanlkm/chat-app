@@ -33,12 +33,25 @@ func LoginUserHandler(authService AuthService) gin.HandlerFunc {
 			return
 		}
 
+		// compare if password is correct
+		if !utils.ComparePasswords(authenticatedUser.Password, credentials.Password) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid credentials"})
+			return
+		}
+
+		// Check if user is valid
+		if authenticatedUser.Validity != "valid" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "You are not a valid user, " +
+				"please contact the administrator"})
+			return
+		}
+
 		// objectID from string to objectID
 
 		objectID, err := primitive.ObjectIDFromHex(authenticatedUser.ID)
 
 		// Generate JWT token
-		token, err := utils.GenerateToken(&credentials.Username, &objectID)
+		token, err := utils.GenerateToken(&credentials.Username, &objectID, &authenticatedUser.Role)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 			return

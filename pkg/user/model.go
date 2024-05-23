@@ -9,8 +9,14 @@ type User struct {
 	Password     string    `json:"password,omitempty" bson:"password,omitempty"`
 	CreatedAt    time.Time `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
 	UpdatedAt    time.Time `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
+	Role         string    `json:"role,omitempty" bson:"role,omitempty"`
+	Validity     string    `json:"validity,omitempty" bson:"validity,omitempty"`
 	Code         string    `json:"code,omitempty" bson:"code,omitempty"`
 	JoinedSalons []string  `json:"joinedSalons,omitempty" bson:"joinedRooms,omitempty"`
+}
+
+type UserValidation struct {
+	Validation bool `json:"validation,omitempty"`
 }
 
 type UserUpdate struct {
@@ -18,5 +24,6 @@ type UserUpdate struct {
 }
 
 type PasswordUpdate struct {
+	OldPassword string `json:"oldPassword,omitempty"`
 	NewPassword string `json:"newPassword,omitempty"`
 }

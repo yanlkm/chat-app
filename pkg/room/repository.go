@@ -43,7 +43,23 @@ func (r *roomRepository) CreateRoom(ctx context.Context, room *Room) (*Room, err
 		Hashtags:    []string{"#room"},
 		Members:     []string{room.Creator},
 	}
-	_, err := r.collection.InsertOne(ctx, room)
+	// check if creator exists in users
+	var userCheck user.User
+	// convert creator to objectID
+	roomCreatorObjectID, err := primitive.ObjectIDFromHex(room.Creator)
+	if err != nil {
+		return nil, errors.New("The creator does not exist")
+	}
+	errCheckUser := r.collectionUsers.FindOne(ctx, bson.D{{"_id", roomCreatorObjectID}}).Decode(&userCheck)
+	if errCheckUser != nil {
+		return nil, errors.New("The creator does not exist")
+	}
+	// check if room creator is valid and admin
+	if userCheck.Validity != "valid" || userCheck.Role != "admin" {
+		return nil, errors.New("The creator is not a valid user or an admin")
+	}
+
+	_, err = r.collection.InsertOne(ctx, room)
 	if err != nil {
 		return nil, err
 	}

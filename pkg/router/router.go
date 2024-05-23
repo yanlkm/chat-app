@@ -29,6 +29,12 @@ func NewRouter(userService user.UserService, codeService code.CodeService, authS
 	r.PUT("users/:id/password",
 		middlewares.AuthMiddleware(),
 		user.UpdatePasswordHandler(userService))
+	r.GET("users/ban/:id/:idBanned",
+		middlewares.AuthMiddleware(),
+		user.BanUserHandler(userService))
+	r.GET("users/unban/:id/:idBanned",
+		middlewares.AuthMiddleware(),
+		user.UnBanUserHandler(userService))
 	r.DELETE("users/:id",
 		middlewares.AuthMiddleware(),
 		user.DeleteUserHandler(userService))

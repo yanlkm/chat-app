@@ -12,12 +12,13 @@ import (
 type Claims struct {
 	UserID   primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Username string
+	Role     string
 	jwt.StandardClaims
 }
 
 // GenerateToken generates a new JWT token based on the provided username and user ID.
 // It returns the signed token string or an error if the token generation fails.
-func GenerateToken(username *string, userID *primitive.ObjectID) (string, error) {
+func GenerateToken(username *string, userID *primitive.ObjectID, role *string) (string, error) {
 
 	// Retrieve the JWT secret key from environment variables.
 	signingKey := []byte(os.Getenv("JWT_SECRET"))
@@ -26,6 +27,7 @@ func GenerateToken(username *string, userID *primitive.ObjectID) (string, error)
 	claims := Claims{
 		UserID:   *userID,
 		Username: *username,
+		Role:     *role,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * 24 * 30).Unix(), // Token expires in 24 hours
 			Subject:   "authentication",

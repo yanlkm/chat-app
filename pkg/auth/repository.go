@@ -35,22 +35,7 @@ func (r *authRepository) Login(ctx context.Context, credentials UserCredentials)
 		return nil, errors.New("user not found")
 	}
 
-	// Verify password
-	err = VerifyPassword(foundUser, credentials)
-	if err != nil {
-		return nil, errors.New("incorrect password")
-	}
-
 	return &foundUser, nil
-}
-
-// VerifyPassword compares the user's stored password with the provided password.
-func VerifyPassword(foundUser user.User, credentials UserCredentials) error {
-	// --> TODO: Implement password hashing
-	if foundUser.Password != credentials.Password {
-		return errors.New("password mismatch")
-	}
-	return nil
 }
 
 // Logout logs a user out by invalidating the session or token.

@@ -17,6 +17,8 @@ type UserRepository interface {
 	CheckUsername(ctx context.Context, username string) error
 	Update(ctx context.Context, id primitive.ObjectID, username string) error
 	UpdatePassword(ctx context.Context, id primitive.ObjectID, newPassword string) error
+	BanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error
+	UnBanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error
 	Delete(ctx context.Context, id primitive.ObjectID) error
 }
 
@@ -100,6 +102,59 @@ func (r *userRepository) UpdatePassword(ctx context.Context, id primitive.Object
 
 	// Update the password in the database
 	_, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"password": newPassword, "updatedAt": time.Now()}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userRepository) BanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error {
+	// Check if banner exists and is a valid admin
+	var banner User
+	err := r.collection.FindOne(ctx, bson.M{"_id": idBanner}).Decode(&banner)
+	if err != nil {
+		return errors.New("Error banning user")
+	}
+	if banner.Role != "admin" || banner.Validity != "valid" {
+		return errors.New("Error banning user")
+	}
+	// Check if banned user exists
+	var banned User
+	err = r.collection.FindOne(ctx, bson.M{"_id": idBanned}).Decode(&banned)
+	if err != nil {
+		return errors.New("Error banning user")
+	}
+	// Check if banned user is not an admin
+	if banned.Role == "admin" {
+		return errors.New("Error banning user")
+	}
+
+	// Ban the user
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": idBanned}, bson.M{"$set": bson.M{"validity": "invalid"}})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userRepository) UnBanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error {
+	// Check if banner exists and is a valid admin
+	var banner User
+	err := r.collection.FindOne(ctx, bson.M{"_id": idBanner}).Decode(&banner)
+	if err != nil {
+		return errors.New("Error unbanning user")
+	}
+	if banner.Role != "admin" || banner.Validity != "valid" {
+		return errors.New("Error unbanning user")
+	}
+	// Check if banned user exists
+	var banned User
+	err = r.collection.FindOne(ctx, bson.M{"_id": idBanned}).Decode(&banned)
+	if err != nil {
+		return errors.New("Error unbanning user")
+	}
+	// Unban the user
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": idBanned}, bson.M{"$set": bson.M{"validity": "valid"}})
 	if err != nil {
 		return err
 	}

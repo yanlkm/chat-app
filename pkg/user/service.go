@@ -14,6 +14,8 @@ type UserService interface {
 	GetAllUsers(ctx context.Context) ([]User, error)
 	UpdateUser(ctx context.Context, id primitive.ObjectID, username string) error
 	UpdatePassword(ctx context.Context, id primitive.ObjectID, newPassword string) error
+	BanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error
+	UnBanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error
 	DeleteUser(ctx context.Context, id primitive.ObjectID) error
 }
 
@@ -52,6 +54,14 @@ func (s *userService) UpdateUser(ctx context.Context, id primitive.ObjectID, use
 
 func (s *userService) UpdatePassword(ctx context.Context, id primitive.ObjectID, newPassword string) error {
 	return s.repo.UpdatePassword(ctx, id, newPassword)
+}
+
+func (s *userService) BanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error {
+	return s.repo.BanUser(ctx, idBanner, idBanned)
+}
+
+func (s *userService) UnBanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error {
+	return s.repo.UnBanUser(ctx, idBanner, idBanned)
 }
 
 func (s *userService) DeleteUser(ctx context.Context, id primitive.ObjectID) error {
