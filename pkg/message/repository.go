@@ -35,6 +35,7 @@ func (r *messageRepository) CreateMessage(ctx context.Context, message *Message)
 		ID:        primitive.NewObjectID(),
 		RoomID:    message.RoomID,
 		Username:  message.Username,
+		UserID:    message.UserID,
 		Content:   message.Content,
 		CreatedAt: time.Now(),
 	}
