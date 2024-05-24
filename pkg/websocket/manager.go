@@ -21,6 +21,7 @@ type RoomSocket struct {
 type MessageSocket struct {
 	RoomID    string    `json:"roomId,omitempty"`
 	Username  string    `json:"username,omitempty"`
+	UserID    string    `json:"userId,omitempty"`
 	Message   string    `json:"message,omitempty"`
 	CreatedAt time.Time `json:"createdAt,omitempty"`
 }
