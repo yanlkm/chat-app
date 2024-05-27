@@ -30,7 +30,7 @@ func main() {
 		fmt.Println("Failed to connect to MongoDB: %v", err)
 	}
 
-	db := client.Database("chat_app")
+	db := client.Database("chat_app_test")
 	userCollection := db.Collection("users")
 	roomCollection := db.Collection("rooms")
 	messageCollection := db.Collection("messages")
