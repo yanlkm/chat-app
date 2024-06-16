@@ -202,6 +202,80 @@ func RemoveMemberFromRoom(roomService RoomService) gin.HandlerFunc {
 		c.JSON(http.StatusOK, gin.H{"room": room})
 	}
 }
+
+func AddHashtagToRoomHandler(roomService RoomService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var room *Room
+		roomID := c.Param("id")
+		objectID, err := primitive.ObjectIDFromHex(roomID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
+			return
+		}
+		var hashtagToAdd Hashtag
+		if err := c.ShouldBindJSON(&hashtagToAdd); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": " Invalid hashtag"})
+			return
+		}
+		// check if hashtag is a 3-min letters word
+		if len(hashtagToAdd.Hashtag) < 3 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Hashtag too short"})
+			return
+		}
+		// check if hashtag respects hashtag name convention
+		hashtagConvention := "^#[a-zA-Z]*$"
+		if re, _ := regexp.Compile(hashtagConvention); !re.Match([]byte(hashtagToAdd.Hashtag)) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid hashtag"})
+			return
+		}
+		room, err = roomService.AddHashtag(c.Request.Context(), objectID, hashtagToAdd.Hashtag)
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Error adding hashtag " + hashtagToAdd.Hashtag})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"room": room})
+		return
+	}
+
+}
+
+func RemoveHashtagFromRoomHandler(roomService RoomService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var room *Room
+		roomID := c.Param("id")
+		objectID, err := primitive.ObjectIDFromHex(roomID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
+			return
+		}
+		var hashtagToRemove Hashtag
+		if err := c.ShouldBindJSON(&hashtagToRemove); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": " Invalid hashtag"})
+			return
+		}
+		// check if hashtag is a 3-min letters word
+		if len(hashtagToRemove.Hashtag) < 3 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Hashtag too short"})
+			return
+		}
+		// check if hashtag respects hashtag name convention
+		hashtagConvention := "^#[a-zA-Z]*$"
+		if re, _ := regexp.Compile(hashtagConvention); !re.Match([]byte(hashtagToRemove.Hashtag)) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid hashtag"})
+			return
+		}
+		room, err = roomService.RemoveHashtag(c.Request.Context(), objectID, hashtagToRemove.Hashtag)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Error removing hashtag " + hashtagToRemove.Hashtag})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"room": room})
+		return
+	}
+
+}
+
 func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rooms, err := roomService.GetAllRooms(c.Request.Context())

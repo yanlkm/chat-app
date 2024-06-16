@@ -13,6 +13,8 @@ type RoomService interface {
 	GetAllRooms(ctx context.Context) ([]Room, error)
 	AddMember(ctx context.Context, roomID primitive.ObjectID, memberID primitive.ObjectID) (*Room, error)
 	RemoveMember(ctx context.Context, roomID primitive.ObjectID, memberID primitive.ObjectID) (*Room, error)
+	AddHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error)
+	RemoveHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error)
 	DeleteRoom(ctx context.Context, roomID primitive.ObjectID) error
 }
 
@@ -50,6 +52,12 @@ func (r *roomService) AddMember(ctx context.Context, roomID primitive.ObjectID, 
 	return r.repo.AddMember(ctx, roomID, memberID)
 }
 
+func (r *roomService) AddHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error) {
+	return r.repo.AddHashtag(ctx, roomID, hashtag)
+}
+func (r *roomService) RemoveHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error) {
+	return r.repo.RemoveHashtag(ctx, roomID, hashtag)
+}
 func (r *roomService) DeleteRoom(ctx context.Context, roomID primitive.ObjectID) error {
 	return r.repo.Delete(ctx, roomID)
 }

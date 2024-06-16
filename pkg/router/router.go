@@ -56,6 +56,10 @@ func NewRouter(userService user.UserService, codeService code.CodeService, authS
 		room.AddMemberToRoom(roomService))
 	r.PUT("rooms/remove/:id", middlewares.IsLoggedInMiddleware(),
 		room.RemoveMemberFromRoom(roomService))
+	r.PATCH("rooms/add/hashtag/:id", middlewares.IsAdminMiddleware(),
+		room.AddHashtagToRoomHandler(roomService))
+	r.PATCH("rooms/remove/hashtag/:id", middlewares.IsAdminMiddleware(),
+		room.RemoveHashtagFromRoomHandler(roomService))
 	// get all members of a room
 	r.GET("rooms/members/:id", middlewares.IsLoggedInMiddleware(),
 		room.GetRoomMembersHandler(roomService, userService))

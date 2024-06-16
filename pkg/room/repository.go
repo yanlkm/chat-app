@@ -18,6 +18,8 @@ type RoomRepository interface {
 	GetAllRooms(ctx context.Context) ([]Room, error)
 	AddMember(ctx context.Context, roomID primitive.ObjectID, memberID primitive.ObjectID) (*Room, error)
 	RemoveMember(ctx context.Context, roomID primitive.ObjectID, memberID primitive.ObjectID) (*Room, error)
+	AddHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error)
+	RemoveHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error)
 	Delete(ctx context.Context, roomID primitive.ObjectID) error
 }
 
@@ -175,6 +177,39 @@ func (r *roomRepository) RemoveMember(ctx context.Context, roomID primitive.Obje
 		_, err = r.collectionUsers.UpdateOne(ctx,
 			bson.D{{"_id", memberID}},
 			bson.D{{"$push", bson.D{{"joinedRooms", roomID.Hex()}}}})
+		return nil, err
+	}
+	return r.GetRoom(ctx, roomID)
+}
+
+func (r *roomRepository) AddHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error) {
+	//check if hashtag already exists in hashtag array
+	var room Room
+	errCheck := r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"hashtags", hashtag}}).Decode(&room)
+	if errCheck == nil {
+		return nil, errors.New("Hashtag already added to room")
+	}
+	_, err := r.collection.UpdateOne(ctx, bson.D{{"_id", roomID}}, bson.D{{"$push", bson.D{{"hashtags", hashtag}}}})
+	if err != nil {
+		return nil, err
+	}
+	return r.GetRoom(ctx, roomID)
+}
+
+func (r *roomRepository) RemoveHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error) {
+	// check if hashtag doesn't exist in hashtag array
+	var room Room
+	errCheck := r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"hashtags", hashtag}}).Decode(&room)
+	if errCheck != nil {
+		return nil, errors.New("Hashtag already removed from room")
+	}
+	// check if hashtag array is not empty or there is at least two hashtags
+	if len(room.Hashtags) < 2 {
+		return nil, errors.New("Hashtag array is empty or there is only one hashtag")
+	}
+
+	_, err := r.collection.UpdateOne(ctx, bson.D{{"_id", roomID}}, bson.D{{"$pull", bson.D{{"hashtags", hashtag}}}})
+	if err != nil {
 		return nil, err
 	}
 	return r.GetRoom(ctx, roomID)

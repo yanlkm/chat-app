@@ -21,3 +21,7 @@ type Room struct {
 type Member struct {
 	ID string `json:"ID,omitempty" bson:"ID,omitempty"`
 }
+
+type Hashtag struct {
+	Hashtag string `json:"hashtag,omitempty" bson:"hashtag,omitempty"`
+}
