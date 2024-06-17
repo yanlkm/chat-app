@@ -17,7 +17,7 @@ func NewRouter(userService user.UserService, codeService code.CodeService, authS
 	r := gin.Default()
 
 	// User routes
-	r.GET("users",
+	r.GET("users", middlewares.IsAdminMiddleware(),
 		user.GetUsersHandler(userService))
 	r.GET("users/:id", middlewares.AuthMiddleware(),
 		user.GetUserHandler(userService))

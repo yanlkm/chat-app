@@ -183,26 +183,50 @@ func (r *roomRepository) RemoveMember(ctx context.Context, roomID primitive.Obje
 }
 
 func (r *roomRepository) AddHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error) {
-	//check if hashtag already exists in hashtag array
+
+	//check if room exists
 	var room Room
-	errCheck := r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"hashtags", hashtag}}).Decode(&room)
-	if errCheck == nil {
+	errCheck := r.collection.FindOne(ctx, bson.M{"_id": roomID}).Decode(&room)
+	if errCheck != nil {
+		return nil, errors.New("Room does not exist")
+	}
+
+	//check if hashtag already exists in hashtag array
+	errHashtag := r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"hashtags", hashtag}})
+	if errHashtag == nil {
 		return nil, errors.New("Hashtag already added to room")
 	}
+
+	// add hashtag to room
 	_, err := r.collection.UpdateOne(ctx, bson.D{{"_id", roomID}}, bson.D{{"$push", bson.D{{"hashtags", hashtag}}}})
 	if err != nil {
 		return nil, err
 	}
+
+	// update last update field
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": roomID}, bson.M{"$set": bson.M{"updatedAt": time.Now()}})
+	if err != nil {
+
+		return nil, err
+	}
+
 	return r.GetRoom(ctx, roomID)
 }
 
 func (r *roomRepository) RemoveHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error) {
-	// check if hashtag doesn't exist in hashtag array
+
+	//check if room exists
 	var room Room
-	errCheck := r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"hashtags", hashtag}}).Decode(&room)
+	errCheck := r.collection.FindOne(ctx, bson.M{"_id": roomID}).Decode(&room)
 	if errCheck != nil {
+		return nil, errors.New("Room does not exist")
+	}
+	// check if hashtag doesn't exist in hashtag array
+	errHashtag := r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"hashtags", hashtag}})
+	if errHashtag == nil {
 		return nil, errors.New("Hashtag already removed from room")
 	}
+
 	// check if hashtag array is not empty or there is at least two hashtags
 	if len(room.Hashtags) < 2 {
 		return nil, errors.New("Hashtag array is empty or there is only one hashtag")
@@ -212,6 +236,14 @@ func (r *roomRepository) RemoveHashtag(ctx context.Context, roomID primitive.Obj
 	if err != nil {
 		return nil, err
 	}
+
+	// update last update field
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": roomID}, bson.M{"$set": bson.M{"updatedAt": time.Now()}})
+	if err != nil {
+
+		return nil, err
+	}
+
 	return r.GetRoom(ctx, roomID)
 }
 
