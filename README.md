@@ -21,7 +21,7 @@ This is a chat application built with Go. It connects to a MongoDB database and 
 ### Clone the repository
 
 ```sh
-git clone https://gitlab.com/yanlkm/chat-app.git
+git clone https://gitlab.com/yanlkm1/chat-app.git
 cd chat-app
 ``` 
 
