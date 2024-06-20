@@ -3,12 +3,22 @@ services:
     image: yanlkm/mongo:latest
     ports:
       - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
 
   chat-app:
     image: yanlkm/chat-app:latest
     build:
       context: .
     ports:
-    - "8080:8080"
+      - "8080:8080"
     depends_on:
       - mongodb
+    volumes:
+      - chat_app_data:/app/data
+
+volumes:
+  mongodb_data:
+    driver: local
+  chat_app_data:
+    driver: local
