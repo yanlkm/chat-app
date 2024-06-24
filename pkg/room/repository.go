@@ -158,6 +158,12 @@ func (r *roomRepository) RemoveMember(ctx context.Context, roomID primitive.Obje
 	if errCheckUser != nil {
 		return nil, errors.New("Member does not exist")
 	}
+	// check if member is the creator of the room
+	var room Room
+	errCheck := r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"creator", memberID.Hex()}}).Decode(&room)
+	if errCheck == nil {
+		return nil, errors.New("Member is the creator of the room")
+	}
 	// remove room from rooms fields of user
 	_, err := r.collectionUsers.UpdateOne(ctx,
 		bson.D{{"_id", memberID}},
@@ -165,9 +171,9 @@ func (r *roomRepository) RemoveMember(ctx context.Context, roomID primitive.Obje
 	if err != nil {
 		return nil, err
 	}
-	var room Room
+
 	// check if member exists in room
-	errCheck := r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"members", memberID.Hex()}}).Decode(&room)
+	errCheck = r.collection.FindOne(ctx, bson.D{{"_id", roomID}, {"members", memberID.Hex()}}).Decode(&room)
 	if errCheck != nil {
 		return nil, errors.New("Member already removed from room")
 	}
