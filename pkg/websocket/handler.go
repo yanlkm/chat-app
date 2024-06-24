@@ -2,15 +2,17 @@ package websocket
 
 import (
 	"chat-app/pkg/message"
+	"chat-app/pkg/room"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 // WebSocketHandler handles WebSocket connections for a specific room
-func WebSocketHandler(c *gin.Context, messageService message.MessageService) {
+func WebSocketHandler(c *gin.Context, messageService message.MessageService, roomService room.RoomService) {
 	roomID := c.Query("id")
-
+	// update the room from the database
+	UpdateRoomsFromDatabase(c, roomService)
 	roomsMu.Lock()
 	room, ok := rooms[roomID]
 	if !ok {

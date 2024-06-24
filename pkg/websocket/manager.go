@@ -58,19 +58,78 @@ func GetRoomsFromDatabase(c *gin.Context, roomService room.RoomService) []*RoomS
 	return rooms
 }
 
+// UpdateRoomsFromDatabase updates the rooms map with the latest rooms from the database
+func UpdateRoomsFromDatabase(c *gin.Context, roomService room.RoomService) {
+	roomsFromDB, err := roomService.GetAllRooms(c)
+	if err != nil {
+		fmt.Printf("Error updating rooms from database: %v\n", err)
+		return
+	}
+
+	// Lock the rooms map
+	roomsMu.Lock()
+	defer roomsMu.Unlock()
+
+	// Update the global rooms map
+	for _, r := range roomsFromDB {
+		roomID := r.ID.Hex()
+		if _, ok := rooms[roomID]; !ok {
+			rooms[roomID] = &RoomSocket{
+				ID:        roomID,
+				Members:   make(map[*websocket.Conn]bool),
+				broadcast: make(chan MessageSocket),
+			}
+			// Start broadcasting messages to all members in the room
+			go handleRoomBroadcast(rooms[roomID])
+		}
+	}
+
+	// Remove any rooms that no longer exist in the database
+	for id := range rooms {
+		found := false
+		for _, r := range roomsFromDB {
+			if r.ID.Hex() == id {
+				found = true
+				break
+			}
+		}
+		if !found {
+			delete(rooms, id)
+		}
+	}
+}
+
+// handleRoomBroadcast handles broadcasting messages to all members in the room
+func handleRoomBroadcast(room *RoomSocket) {
+	for {
+		msg := <-room.broadcast
+
+		roomsMu.Lock()
+		for client := range room.Members {
+			err := client.WriteJSON(msg)
+			if err != nil {
+				fmt.Printf("error: %v\n", err)
+				client.Close()
+				delete(room.Members, client)
+			}
+		}
+		roomsMu.Unlock()
+	}
+}
+
 // HandleRooms creates goroutines to manage existing rooms
 func HandleRooms(c *gin.Context, roomService room.RoomService) {
 	roomsFromDB := GetRoomsFromDatabase(c, roomService)
 
 	for _, roomDB := range roomsFromDB {
-		room := &RoomSocket{
+		roomSocket := &RoomSocket{
 			ID:        roomDB.ID,
 			Members:   make(map[*websocket.Conn]bool),
 			broadcast: make(chan MessageSocket),
 		}
 
 		roomsMu.Lock()
-		rooms[room.ID] = room
+		rooms[roomSocket.ID] = roomSocket
 		roomsMu.Unlock()
 
 		go func(r *RoomSocket) {
@@ -88,6 +147,6 @@ func HandleRooms(c *gin.Context, roomService room.RoomService) {
 					}
 				}
 			}
-		}(room)
+		}(roomSocket)
 	}
 }

@@ -82,7 +82,7 @@ func NewRouter(userService user.UserService, codeService code.CodeService, authS
 
 	// websocket routes
 	r.GET("/ws", func(c *gin.Context) {
-		websocket.WebSocketHandler(c, messageService)
+		websocket.WebSocketHandler(c, messageService, roomService)
 	})
 	// starting handling rooms
 	c := gin.Context{}
