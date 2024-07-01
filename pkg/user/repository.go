@@ -22,10 +22,12 @@ type UserRepository interface {
 	Delete(ctx context.Context, id primitive.ObjectID) error
 }
 
+// userRepository represents the repository for managing users.
 type userRepository struct {
 	collection *mongo.Collection
 }
 
+// NewUserRepository creates a new user repository.
 func NewUserRepository(collection *mongo.Collection) UserRepository {
 	return &userRepository{collection: collection}
 }
@@ -38,6 +40,7 @@ func (r *userRepository) Create(ctx context.Context, user *User) error {
 	return nil
 }
 
+// CheckUsername checks if the username already exists in the database.
 func (r *userRepository) CheckUsername(ctx context.Context, username string) error {
 	var user User
 	err := r.collection.FindOne(ctx, bson.D{{"username", username}}).Decode(&user)
@@ -52,6 +55,7 @@ func (r *userRepository) CheckUsername(ctx context.Context, username string) err
 	return errors.New("username already exists")
 }
 
+// CheckEmail checks if the email already exists in the database.
 func (r *userRepository) CheckEmail(ctx context.Context, email string) error {
 	var user User
 	err := r.collection.FindOne(ctx, bson.D{{"email", email}}).Decode(&user)
@@ -65,6 +69,7 @@ func (r *userRepository) CheckEmail(ctx context.Context, email string) error {
 	return errors.New("email already exists")
 }
 
+// Read returns the user with the provided ID.
 func (r *userRepository) Read(ctx context.Context, id primitive.ObjectID) (*User, error) {
 	var user User
 	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
@@ -74,6 +79,7 @@ func (r *userRepository) Read(ctx context.Context, id primitive.ObjectID) (*User
 	return &user, nil
 }
 
+// get all users except admins and return them
 func (r *userRepository) ReadUsers(ctx context.Context) ([]User, error) {
 	var users []User
 	cursor, err := r.collection.Find(ctx, bson.D{})
@@ -84,13 +90,24 @@ func (r *userRepository) ReadUsers(ctx context.Context) ([]User, error) {
 	for cursor.Next(ctx) {
 		var user User
 		cursor.Decode(&user)
-		users = append(users, user)
+		if user.Role != "admin" {
+			users = append(users, user)
+		}
 	}
 	return users, nil
 }
 
+// Update updates the username for a user.
 func (r *userRepository) Update(ctx context.Context, id primitive.ObjectID, username string) error {
-	_, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"username": username, "updatedAt": time.Now()}})
+	// check if user exists
+	var user User
+	// check if username is unique
+	err := r.collection.FindOne(ctx, bson.D{{"username", username}}).Decode(&user)
+	if err == nil && user.ID != id {
+		return errors.New("Username already exists")
+	}
+	// Update the username in the database
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"username": username, "updatedAt": time.Now()}})
 	if err != nil {
 		return err
 	}
@@ -99,15 +116,15 @@ func (r *userRepository) Update(ctx context.Context, id primitive.ObjectID, user
 
 // UpdatePassword updates the password for a user.
 func (r *userRepository) UpdatePassword(ctx context.Context, id primitive.ObjectID, newPassword string) error {
-
-	// Update the password in the database
-	_, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"password": newPassword, "updatedAt": time.Now()}})
+	// update the password in the database
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"password": newPassword, "updatedAt": time.Now()}})
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
+// BanUser bans a user from the platform.
 func (r *userRepository) BanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error {
 	// Check if banner exists and is a valid admin
 	var banner User
@@ -137,6 +154,7 @@ func (r *userRepository) BanUser(ctx context.Context, idBanner primitive.ObjectI
 	return nil
 }
 
+// UnBanUser unbans a user from the platform.
 func (r *userRepository) UnBanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error {
 	// Check if banner exists and is a valid admin
 	var banner User
@@ -161,6 +179,7 @@ func (r *userRepository) UnBanUser(ctx context.Context, idBanner primitive.Objec
 	return nil
 }
 
+// Delete deletes a user from the platform.
 func (r *userRepository) Delete(ctx context.Context, id primitive.ObjectID) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
