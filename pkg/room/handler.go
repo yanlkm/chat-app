@@ -9,6 +9,7 @@ import (
 	"regexp"
 )
 
+// CreateRoomHandler create a room
 func CreateRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var newRoom Room
@@ -71,6 +72,7 @@ func CreateRoomHandler(roomService RoomService) gin.HandlerFunc {
 	}
 }
 
+// GetRoomHandler get a room by its id
 func GetRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("id")
@@ -79,6 +81,7 @@ func GetRoomHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
 			return
 		}
+		// get room by id
 		room, err := roomService.GetRoom(c.Request.Context(), objectID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get room"})
@@ -88,6 +91,7 @@ func GetRoomHandler(roomService RoomService) gin.HandlerFunc {
 	}
 }
 
+// GetUserRoomsHandler get all rooms of a user
 func GetUserRoomsHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("id")
@@ -96,6 +100,7 @@ func GetUserRoomsHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get rooms"})
 			return
 		}
+		// get all rooms where user is a member
 		rooms, err := roomService.GetUserRooms(c.Request.Context(), objectID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
@@ -106,7 +111,27 @@ func GetUserRoomsHandler(roomService RoomService) gin.HandlerFunc {
 
 }
 
-// get all members of a room
+// GetRoomsCreatedByAdminHandler get all rooms created by an admin
+func GetRoomsCreatedByAdminHandler(roomService RoomService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userID := c.Param("id")
+		objectID, err := primitive.ObjectIDFromHex(userID)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get rooms"})
+			return
+		}
+		// get all rooms created by an admin
+		rooms, err := roomService.GetRoomsCreatedByAdmin(c.Request.Context(), objectID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"rooms": rooms})
+	}
+
+}
+
+// GetRoomMembersHandler get all members of a room
 func GetRoomMembersHandler(roomService RoomService, userService user.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("id")
@@ -146,7 +171,7 @@ func GetRoomMembersHandler(roomService RoomService, userService user.UserService
 	}
 }
 
-// add a member to a room
+// AddMemberToRoom add a member to a room
 func AddMemberToRoom(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("id")
@@ -174,7 +199,7 @@ func AddMemberToRoom(roomService RoomService) gin.HandlerFunc {
 	}
 }
 
-// remove a member from a room
+// RemoveMemberFromRoom remove a member from a room
 func RemoveMemberFromRoom(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("id")
@@ -203,6 +228,7 @@ func RemoveMemberFromRoom(roomService RoomService) gin.HandlerFunc {
 	}
 }
 
+// AddHashtagToRoomHandler add a hashtag to a room
 func AddHashtagToRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var room *Room
@@ -240,6 +266,7 @@ func AddHashtagToRoomHandler(roomService RoomService) gin.HandlerFunc {
 
 }
 
+// RemoveHashtagFromRoomHandler remove a hashtag from a room
 func RemoveHashtagFromRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var room *Room
@@ -276,6 +303,7 @@ func RemoveHashtagFromRoomHandler(roomService RoomService) gin.HandlerFunc {
 
 }
 
+// GetRoomsHandler get all rooms
 func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rooms, err := roomService.GetAllRooms(c.Request.Context())
@@ -287,6 +315,7 @@ func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
 	}
 }
 
+// DeleteRoomHandler delete a room
 func DeleteRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 

@@ -48,6 +48,8 @@ func NewRouter(userService user.UserService, codeService code.CodeService, authS
 		room.GetRoomsHandler(roomService))
 	r.GET("rooms/:id", middlewares.IsLoggedInMiddleware(),
 		room.GetRoomHandler(roomService))
+	r.GET("rooms/created/:id", middlewares.IsAdminMiddleware(),
+		room.GetRoomsCreatedByAdminHandler(roomService))
 	r.GET("rooms/user/:id", middlewares.IsLoggedInMiddleware(),
 		room.GetUserRoomsHandler(roomService))
 	r.POST("rooms", middlewares.IsAdminMiddleware(),

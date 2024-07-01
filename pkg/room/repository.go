@@ -16,6 +16,7 @@ type RoomRepository interface {
 	GetRoom(ctx context.Context, roomID primitive.ObjectID) (*Room, error)
 	GetUserRooms(ctx context.Context, userID primitive.ObjectID) ([]Room, error)
 	GetAllRooms(ctx context.Context) ([]Room, error)
+	GetRoomsCreatedByAdmin(ctx context.Context, adminID primitive.ObjectID) ([]Room, error)
 	AddMember(ctx context.Context, roomID primitive.ObjectID, memberID primitive.ObjectID) (*Room, error)
 	RemoveMember(ctx context.Context, roomID primitive.ObjectID, memberID primitive.ObjectID) (*Room, error)
 	AddHashtag(ctx context.Context, roomID primitive.ObjectID, hashtag string) (*Room, error)
@@ -107,6 +108,26 @@ func (r *roomRepository) GetUserRooms(ctx context.Context, userID primitive.Obje
 
 func (r *roomRepository) GetAllRooms(ctx context.Context) ([]Room, error) {
 	cursor, err := r.collection.Find(ctx, bson.D{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+	var rooms []Room
+	if err = cursor.All(ctx, &rooms); err != nil {
+		return nil, err
+	}
+	return rooms, nil
+
+}
+
+func (r *roomRepository) GetRoomsCreatedByAdmin(ctx context.Context, adminID primitive.ObjectID) ([]Room, error) {
+	// check if userCheck exists in users
+	var adminCheck user.User
+	errCheckAdmin := r.collectionUsers.FindOne(ctx, bson.D{{"_id", adminID}}).Decode(&adminCheck)
+	if errCheckAdmin != nil {
+		return nil, errors.New("User does not exist")
+	}
+	cursor, err := r.collection.Find(ctx, bson.D{{"creator", adminID.Hex()}})
 	if err != nil {
 		return nil, err
 	}
