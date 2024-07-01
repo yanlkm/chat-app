@@ -103,7 +103,8 @@ func (r *userRepository) Update(ctx context.Context, id primitive.ObjectID, user
 	var user User
 	// check if username is unique
 	err := r.collection.FindOne(ctx, bson.D{{"username", username}}).Decode(&user)
-	if err == nil && user.ID != id {
+	// if the username already exists and it is not the user's username by id converted to string
+	if err == nil && user.ID != id.Hex() {
 		return errors.New("Username already exists")
 	}
 	// Update the username in the database
@@ -117,7 +118,7 @@ func (r *userRepository) Update(ctx context.Context, id primitive.ObjectID, user
 // UpdatePassword updates the password for a user.
 func (r *userRepository) UpdatePassword(ctx context.Context, id primitive.ObjectID, newPassword string) error {
 	// update the password in the database
-	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"password": newPassword, "updatedAt": time.Now()}})
+	_, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"password": newPassword, "updatedAt": time.Now()}})
 	if err != nil {
 		return err
 	}
