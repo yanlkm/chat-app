@@ -7,11 +7,11 @@ import (
 )
 
 type UserService interface {
-	CreateUser(ctx context.Context, user *User) error
+	CreateUser(ctx context.Context, user *UserEntity) error
 	CheckEmail(ctx context.Context, email string) error
 	CheckUsername(ctx context.Context, username string) error
-	GetUser(ctx context.Context, id primitive.ObjectID) (*User, error)
-	GetAllUsers(ctx context.Context) ([]User, error)
+	GetUser(ctx context.Context, id primitive.ObjectID) (*UserEntity, error)
+	GetAllUsers(ctx context.Context) ([]UserEntity, error)
 	UpdateUser(ctx context.Context, id primitive.ObjectID, username string) error
 	UpdatePassword(ctx context.Context, id primitive.ObjectID, newPassword string) error
 	BanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error
@@ -27,7 +27,7 @@ func NewUserService(repo UserRepository) UserService {
 	return &userService{repo: repo}
 }
 
-func (s *userService) CreateUser(ctx context.Context, user *User) error {
+func (s *userService) CreateUser(ctx context.Context, user *UserEntity) error {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 	return s.repo.Create(ctx, user)
@@ -40,11 +40,11 @@ func (s *userService) CheckUsername(ctx context.Context, username string) error 
 	return s.repo.CheckUsername(ctx, username)
 }
 
-func (s *userService) GetUser(ctx context.Context, id primitive.ObjectID) (*User, error) {
+func (s *userService) GetUser(ctx context.Context, id primitive.ObjectID) (*UserEntity, error) {
 	return s.repo.Read(ctx, id)
 }
 
-func (s *userService) GetAllUsers(ctx context.Context) ([]User, error) {
+func (s *userService) GetAllUsers(ctx context.Context) ([]UserEntity, error) {
 	return s.repo.ReadUsers(ctx)
 }
 

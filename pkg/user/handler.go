@@ -12,7 +12,7 @@ import (
 // CreateUserHandler creates a new user.
 func CreateUserHandler(userService UserService, codeService code.CodeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var newUser User
+		var newUser UserEntity
 		if err := c.ShouldBindJSON(&newUser); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
@@ -157,7 +157,7 @@ func UpdateUserHandler(userService UserService) gin.HandlerFunc {
 			return
 		}
 
-		var updatedUser UserUpdate
+		var updatedUser UserUpdateEntity
 		if err := c.ShouldBindJSON(&updatedUser); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
@@ -191,14 +191,14 @@ func UpdateUserHandler(userService UserService) gin.HandlerFunc {
 // UpdatePasswordHandler updates the password for a user.
 func UpdatePasswordHandler(userService UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var user *User
+		var user *UserEntity
 		userID := c.Param("id")
 		objectID, err := primitive.ObjectIDFromHex(userID)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Error getting user informations"})
 			return
 		}
-		var passwordUpdate PasswordUpdate
+		var passwordUpdate PasswordUpdateEntity
 		if err := c.ShouldBindJSON(&passwordUpdate); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
