@@ -11,9 +11,9 @@ import (
 )
 
 type RoomRepository interface {
-	CreateRoom(ctx context.Context, room *Room) (*Room, error)
+	CreateRoom(ctx context.Context, room *RoomEntity) (*RoomEntity, error)
 	CheckName(ctx context.Context, name string) error
-	GetRoom(ctx context.Context, roomID primitive.ObjectID) (*Room, error)
+	GetRoom(ctx context.Context, roomID primitive.ObjectID) (*RoomEntity, error)
 	GetUserRooms(ctx context.Context, userID primitive.ObjectID) ([]Room, error)
 	GetAllRooms(ctx context.Context) ([]Room, error)
 	GetRoomsCreatedByAdmin(ctx context.Context, adminID primitive.ObjectID) ([]Room, error)

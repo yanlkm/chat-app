@@ -30,8 +30,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		//check if user is logged in with id passed in params
-		// convert claims ObjectId to string
-		stringClaimsObjectId := claims.UserID.Hex()
+		stringClaimsObjectId := claims.UserID
 
 		if c.Param("id") != "" {
 			if c.Param("id") != stringClaimsObjectId {
@@ -42,7 +41,6 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		}
 
-		// TODO: Set user ID in context
 		c.Set("userID", claims.UserID)
 
 		// Continue with the request

@@ -4,7 +4,6 @@ import (
 	"chat-app/pkg/code"
 	"chat-app/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"regexp"
 )
@@ -111,13 +110,8 @@ func CreateUserHandler(userService UserService, codeService code.CodeService) gi
 func GetUserHandler(userService UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(userID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Error getting user informations"})
-			return
-		}
 
-		user, err := userService.GetUser(c.Request.Context(), objectID)
+		user, err := userService.GetUser(c.Request.Context(), userID)
 		// user without password
 		user.Password = ""
 		if err != nil {
@@ -150,13 +144,6 @@ func UpdateUserHandler(userService UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		userID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(userID)
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Error getting user informations"})
-			return
-		}
-
 		var updatedUser UserUpdateEntity
 		if err := c.ShouldBindJSON(&updatedUser); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
@@ -180,7 +167,7 @@ func UpdateUserHandler(userService UserService) gin.HandlerFunc {
 			return
 		}
 
-		if err := userService.UpdateUser(c.Request.Context(), objectID, updatedUser.Username); err != nil {
+		if err := userService.UpdateUser(c.Request.Context(), userID, updatedUser.Username); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 			return
 		}
@@ -191,14 +178,13 @@ func UpdateUserHandler(userService UserService) gin.HandlerFunc {
 // UpdatePasswordHandler updates the password for a user.
 func UpdatePasswordHandler(userService UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var user *UserEntity
+		// get user id
 		userID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(userID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Error getting user informations"})
-			return
-		}
+
+		// entities to store user and password update
+		var user *UserEntity
 		var passwordUpdate PasswordUpdateEntity
+
 		if err := c.ShouldBindJSON(&passwordUpdate); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
@@ -219,7 +205,7 @@ func UpdatePasswordHandler(userService UserService) gin.HandlerFunc {
 		passwordUpdate.NewPassword = hashedPassword
 
 		// check if old password is correct
-		user, err = userService.GetUser(c.Request.Context(), objectID)
+		user, err = userService.GetUser(c.Request.Context(), userID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
 			return
@@ -230,7 +216,7 @@ func UpdatePasswordHandler(userService UserService) gin.HandlerFunc {
 		}
 
 		// update user password
-		if err := userService.UpdatePassword(c.Request.Context(), objectID, passwordUpdate.NewPassword); err != nil {
+		if err := userService.UpdatePassword(c.Request.Context(), userID, passwordUpdate.NewPassword); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
 			return
 		}
@@ -242,21 +228,14 @@ func UpdatePasswordHandler(userService UserService) gin.HandlerFunc {
 func BanUserHandler(userService UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		// get user id : bannerID and bannedID
 		var bannerID string
 		var bannedID string
+
 		bannerID = c.Param("id")
 		bannedID = c.Param("idBanned")
-		idBanner, err := primitive.ObjectIDFromHex(bannerID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Error getting user informations"})
-			return
-		}
-		idBanned, err := primitive.ObjectIDFromHex(bannedID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Error getting user informations"})
-			return
-		}
-		if err := userService.BanUser(c.Request.Context(), idBanner, idBanned); err != nil {
+
+		if err := userService.BanUser(c.Request.Context(), bannerID, bannedID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to ban user"})
 			return
 		}
@@ -268,21 +247,13 @@ func BanUserHandler(userService UserService) gin.HandlerFunc {
 func UnBanUserHandler(userService UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		// get user id : bannerID and bannedID
 		var bannerID string
 		var bannedID string
 		bannerID = c.Param("id")
 		bannedID = c.Param("idBanned")
-		idBanner, err := primitive.ObjectIDFromHex(bannerID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Error getting user informations"})
-			return
-		}
-		idBanned, err := primitive.ObjectIDFromHex(bannedID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Error getting user informations"})
-			return
-		}
-		if err := userService.UnBanUser(c.Request.Context(), idBanner, idBanned); err != nil {
+
+		if err := userService.UnBanUser(c.Request.Context(), bannerID, bannedID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unban user"})
 			return
 		}
@@ -295,12 +266,8 @@ func UnBanUserHandler(userService UserService) gin.HandlerFunc {
 func DeleteUserHandler(userService UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(userID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Error getting user informations"})
-			return
-		}
-		if err := userService.DeleteUser(c.Request.Context(), objectID); err != nil {
+
+		if err := userService.DeleteUser(c.Request.Context(), userID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user account"})
 			return
 		}

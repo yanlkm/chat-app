@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
 
@@ -10,13 +9,13 @@ type UserService interface {
 	CreateUser(ctx context.Context, user *UserEntity) error
 	CheckEmail(ctx context.Context, email string) error
 	CheckUsername(ctx context.Context, username string) error
-	GetUser(ctx context.Context, id primitive.ObjectID) (*UserEntity, error)
+	GetUser(ctx context.Context, id string) (*UserEntity, error)
 	GetAllUsers(ctx context.Context) ([]UserEntity, error)
-	UpdateUser(ctx context.Context, id primitive.ObjectID, username string) error
-	UpdatePassword(ctx context.Context, id primitive.ObjectID, newPassword string) error
-	BanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error
-	UnBanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error
-	DeleteUser(ctx context.Context, id primitive.ObjectID) error
+	UpdateUser(ctx context.Context, id string, username string) error
+	UpdatePassword(ctx context.Context, id string, newPassword string) error
+	BanUser(ctx context.Context, idBanner string, idBanned string) error
+	UnBanUser(ctx context.Context, idBanner string, idBanned string) error
+	DeleteUser(ctx context.Context, id string) error
 }
 
 type userService struct {
@@ -40,7 +39,7 @@ func (s *userService) CheckUsername(ctx context.Context, username string) error 
 	return s.repo.CheckUsername(ctx, username)
 }
 
-func (s *userService) GetUser(ctx context.Context, id primitive.ObjectID) (*UserEntity, error) {
+func (s *userService) GetUser(ctx context.Context, id string) (*UserEntity, error) {
 	return s.repo.Read(ctx, id)
 }
 
@@ -48,22 +47,22 @@ func (s *userService) GetAllUsers(ctx context.Context) ([]UserEntity, error) {
 	return s.repo.ReadUsers(ctx)
 }
 
-func (s *userService) UpdateUser(ctx context.Context, id primitive.ObjectID, username string) error {
+func (s *userService) UpdateUser(ctx context.Context, id string, username string) error {
 	return s.repo.Update(ctx, id, username)
 }
 
-func (s *userService) UpdatePassword(ctx context.Context, id primitive.ObjectID, newPassword string) error {
+func (s *userService) UpdatePassword(ctx context.Context, id string, newPassword string) error {
 	return s.repo.UpdatePassword(ctx, id, newPassword)
 }
 
-func (s *userService) BanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error {
+func (s *userService) BanUser(ctx context.Context, idBanner string, idBanned string) error {
 	return s.repo.BanUser(ctx, idBanner, idBanned)
 }
 
-func (s *userService) UnBanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error {
+func (s *userService) UnBanUser(ctx context.Context, idBanner string, idBanned string) error {
 	return s.repo.UnBanUser(ctx, idBanner, idBanned)
 }
 
-func (s *userService) DeleteUser(ctx context.Context, id primitive.ObjectID) error {
+func (s *userService) DeleteUser(ctx context.Context, id string) error {
 	return s.repo.Delete(ctx, id)
 }

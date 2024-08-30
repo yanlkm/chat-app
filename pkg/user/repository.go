@@ -11,15 +11,15 @@ import (
 
 type UserRepository interface {
 	Create(ctx context.Context, user *UserEntity) error
-	Read(ctx context.Context, id primitive.ObjectID) (*UserEntity, error)
+	Read(ctx context.Context, id string) (*UserEntity, error)
 	ReadUsers(ctx context.Context) ([]UserEntity, error)
 	CheckEmail(ctx context.Context, email string) error
 	CheckUsername(ctx context.Context, username string) error
-	Update(ctx context.Context, id primitive.ObjectID, username string) error
-	UpdatePassword(ctx context.Context, id primitive.ObjectID, newPassword string) error
-	BanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error
-	UnBanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error
-	Delete(ctx context.Context, id primitive.ObjectID) error
+	Update(ctx context.Context, id string, username string) error
+	UpdatePassword(ctx context.Context, id string, newPassword string) error
+	BanUser(ctx context.Context, idBanner string, idBanned string) error
+	UnBanUser(ctx context.Context, idBanner string, idBanned string) error
+	Delete(ctx context.Context, id string) error
 }
 
 type userRepository struct {
@@ -30,49 +30,26 @@ func NewUserRepository(collection *mongo.Collection) UserRepository {
 	return &userRepository{collection: collection}
 }
 
-func modelToEntity(model *UserModel) *UserEntity {
-	return &UserEntity{
-		ID:           model.ID,
-		Username:     model.Username,
-		Email:        model.Email,
-		Password:     model.Password,
-		CreatedAt:    model.CreatedAt,
-		UpdatedAt:    model.UpdatedAt,
-		Role:         model.Role,
-		Validity:     model.Validity,
-		JoinedSalons: model.JoinedSalons,
-	}
-}
-
-func entityToModel(entity *UserEntity) *UserModel {
-	return &UserModel{
-		ID:           entity.ID,
-		Username:     entity.Username,
-		Email:        entity.Email,
-		Password:     entity.Password,
-		CreatedAt:    entity.CreatedAt,
-		UpdatedAt:    entity.UpdatedAt,
-		Role:         entity.Role,
-		Validity:     entity.Validity,
-		JoinedSalons: entity.JoinedSalons,
-	}
-}
-
 // Create creates a new user in the database.
 func (r *userRepository) Create(ctx context.Context, user *UserEntity) error {
-	model := entityToModel(user)
+	model := EntityToModel(user)
 	_, err := r.collection.InsertOne(ctx, model)
 	return err
 }
 
 // Read returns the user with the provided ID.
-func (r *userRepository) Read(ctx context.Context, id primitive.ObjectID) (*UserEntity, error) {
-	var model UserModel
-	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&model)
+func (r *userRepository) Read(ctx context.Context, id string) (*UserEntity, error) {
+	// convert id to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
 	}
-	return modelToEntity(&model), nil
+	var model UserModel
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectID}).Decode(&model)
+	if err != nil {
+		return nil, err
+	}
+	return ModelToEntity(&model), nil
 }
 
 // CheckUsername checks if the username already exists in the database.
@@ -104,7 +81,7 @@ func (r *userRepository) CheckEmail(ctx context.Context, email string) error {
 	return errors.New("email already exists")
 }
 
-// get all users except admins and return them
+// ReadUsers get all users except admins and return them
 func (r *userRepository) ReadUsers(ctx context.Context) ([]UserEntity, error) {
 	var users []UserEntity
 	cursor, err := r.collection.Find(ctx, bson.D{})
@@ -116,24 +93,29 @@ func (r *userRepository) ReadUsers(ctx context.Context) ([]UserEntity, error) {
 		var user UserModel
 		cursor.Decode(&user)
 		if user.Role != "admin" {
-			users = append(users, *modelToEntity(&user))
+			users = append(users, *ModelToEntity(&user))
 		}
 	}
 	return users, nil
 }
 
 // Update updates the username for a user.
-func (r *userRepository) Update(ctx context.Context, id primitive.ObjectID, username string) error {
+func (r *userRepository) Update(ctx context.Context, id string, username string) error {
+	// convert id to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
 	// check if user exists
 	var user UserModel
 	// check if username is unique
-	err := r.collection.FindOne(ctx, bson.D{{"username", username}}).Decode(&user)
+	err = r.collection.FindOne(ctx, bson.D{{"username", username}}).Decode(&user)
 	// if the username already exists and it is not the user's username by id converted to string
-	if err == nil && user.ID != id.Hex() {
+	if err == nil && user.ID != id {
 		return errors.New("Username already exists")
 	}
 	// Update the username in the database
-	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"username": username, "updatedAt": time.Now()}})
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": bson.M{"username": username, "updatedAt": time.Now()}})
 	if err != nil {
 		return err
 	}
@@ -141,9 +123,14 @@ func (r *userRepository) Update(ctx context.Context, id primitive.ObjectID, user
 }
 
 // UpdatePassword updates the password for a user.
-func (r *userRepository) UpdatePassword(ctx context.Context, id primitive.ObjectID, newPassword string) error {
+func (r *userRepository) UpdatePassword(ctx context.Context, id string, newPassword string) error {
+	// convert id to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
 	// update the password in the database
-	_, err := r.collection.UpdateOne(ctx, bson.M{"_id": id}, bson.M{"$set": bson.M{"password": newPassword, "updatedAt": time.Now()}})
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": bson.M{"password": newPassword, "updatedAt": time.Now()}})
 	if err != nil {
 		return err
 	}
@@ -151,10 +138,19 @@ func (r *userRepository) UpdatePassword(ctx context.Context, id primitive.Object
 }
 
 // BanUser bans a user from the platform.
-func (r *userRepository) BanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error {
+func (r *userRepository) BanUser(ctx context.Context, idBanner string, idBanned string) error {
+	// convert ids to ObjectIDs
+	objectIDBanner, err := primitive.ObjectIDFromHex(idBanner)
+	if err != nil {
+		return err
+	}
+	objectIDBanned, err := primitive.ObjectIDFromHex(idBanned)
+	if err != nil {
+		return err
+	}
 	// Check if banner exists and is a valid admin
 	var banner UserModel
-	err := r.collection.FindOne(ctx, bson.M{"_id": idBanner}).Decode(&banner)
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectIDBanner}).Decode(&banner)
 	if err != nil {
 		return errors.New("Error banning user")
 	}
@@ -163,7 +159,7 @@ func (r *userRepository) BanUser(ctx context.Context, idBanner primitive.ObjectI
 	}
 	// Check if banned user exists
 	var banned UserModel
-	err = r.collection.FindOne(ctx, bson.M{"_id": idBanned}).Decode(&banned)
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectIDBanned}).Decode(&banned)
 	if err != nil {
 		return errors.New("Error banning user")
 	}
@@ -173,7 +169,7 @@ func (r *userRepository) BanUser(ctx context.Context, idBanner primitive.ObjectI
 	}
 
 	// Ban the user
-	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": idBanned}, bson.M{"$set": bson.M{"validity": "invalid"}})
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectIDBanned}, bson.M{"$set": bson.M{"validity": "invalid"}})
 	if err != nil {
 		return err
 	}
@@ -181,10 +177,20 @@ func (r *userRepository) BanUser(ctx context.Context, idBanner primitive.ObjectI
 }
 
 // UnBanUser unbans a user from the platform.
-func (r *userRepository) UnBanUser(ctx context.Context, idBanner primitive.ObjectID, idBanned primitive.ObjectID) error {
+func (r *userRepository) UnBanUser(ctx context.Context, idBanner string, idBanned string) error {
+	// convert ids to ObjectIDs
+	objectIDBanner, err := primitive.ObjectIDFromHex(idBanner)
+	if err != nil {
+		return err
+	}
+	objectIDBanned, err := primitive.ObjectIDFromHex(idBanned)
+	if err != nil {
+		return err
+	}
+
 	// Check if banner exists and is a valid admin
 	var banner UserModel
-	err := r.collection.FindOne(ctx, bson.M{"_id": idBanner}).Decode(&banner)
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectIDBanner}).Decode(&banner)
 	if err != nil {
 		return errors.New("Error unbanning user")
 	}
@@ -193,12 +199,12 @@ func (r *userRepository) UnBanUser(ctx context.Context, idBanner primitive.Objec
 	}
 	// Check if banned user exists
 	var banned UserModel
-	err = r.collection.FindOne(ctx, bson.M{"_id": idBanned}).Decode(&banned)
+	err = r.collection.FindOne(ctx, bson.M{"_id": objectIDBanned}).Decode(&banned)
 	if err != nil {
 		return errors.New("Error unbanning user")
 	}
 	// Unban the user
-	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": idBanned}, bson.M{"$set": bson.M{"validity": "valid"}})
+	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectIDBanned}, bson.M{"$set": bson.M{"validity": "valid"}})
 	if err != nil {
 		return err
 	}
@@ -206,8 +212,13 @@ func (r *userRepository) UnBanUser(ctx context.Context, idBanner primitive.Objec
 }
 
 // Delete deletes a user from the platform.
-func (r *userRepository) Delete(ctx context.Context, id primitive.ObjectID) error {
-	_, err := r.collection.DeleteOne(ctx, bson.M{"_id": id})
+func (r *userRepository) Delete(ctx context.Context, id string) error {
+	// convert id to ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = r.collection.DeleteOne(ctx, bson.M{"_id": objectID})
 	if err != nil {
 		return err
 	}

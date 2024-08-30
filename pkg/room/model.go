@@ -16,12 +16,3 @@ type Room struct {
 	CreatedAt   time.Time          `json:"createdAt,omitempty" bson:"createdAt,omitempty"`
 	UpdatedAt   time.Time          `json:"updatedAt,omitempty" bson:"updatedAt,omitempty"`
 }
-
-// member of a room
-type Member struct {
-	ID string `json:"ID,omitempty" bson:"ID,omitempty"`
-}
-
-type Hashtag struct {
-	Hashtag string `json:"hashtag,omitempty" bson:"hashtag,omitempty"`
-}

@@ -3,12 +3,11 @@ package auth
 import (
 	"chat-app/pkg/user"
 	"context"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type AuthService interface {
-	LoginUser(ctx context.Context, userLogin *UserCredentials) (*user.User, error)
-	LogoutUser(ctx context.Context, id *primitive.ObjectID) error
+	LoginUser(ctx context.Context, userLogin *UserCredentials) (*user.UserEntity, error)
+	LogoutUser(ctx context.Context, id *string) error
 }
 
 type authService struct {
@@ -19,9 +18,9 @@ func NewAuthService(repo AuthRepository) AuthService {
 	return &authService{repo: repo}
 }
 
-func (s *authService) LoginUser(ctx context.Context, userLogin *UserCredentials) (*user.User, error) {
+func (s *authService) LoginUser(ctx context.Context, userLogin *UserCredentials) (*user.UserEntity, error) {
 	return s.repo.Login(ctx, *userLogin)
 }
-func (s *authService) LogoutUser(ctx context.Context, id *primitive.ObjectID) error {
+func (s *authService) LogoutUser(ctx context.Context, id *string) error {
 	return s.repo.Logout(ctx, id)
 }

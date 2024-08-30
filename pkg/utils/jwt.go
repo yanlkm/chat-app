@@ -1,16 +1,16 @@
 package utils
 
 import (
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"os"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
 // Claims represents the structure of the JWT claims.
 type Claims struct {
-	UserID   primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	UserID   string
 	Username string
 	Role     string
 	jwt.StandardClaims
@@ -18,7 +18,7 @@ type Claims struct {
 
 // GenerateToken generates a new JWT token based on the provided username and user ID.
 // It returns the signed token string or an error if the token generation fails.
-func GenerateToken(username *string, userID *primitive.ObjectID, role *string) (string, error) {
+func GenerateToken(username *string, userID *string, role *string) (string, error) {
 
 	// Retrieve the JWT secret key from environment variables.
 	signingKey := []byte(os.Getenv("JWT_SECRET"))
@@ -72,7 +72,7 @@ func VerifyToken(tokenString *string) (*Claims, error) {
 	return claims, nil
 }
 
-// get userID and username (logged in) from token cookie/headers
+// GetUserIDAndUsernameFromContext get Id and Username of user from token cookie/headers
 func GetUserIDAndUsernameFromContext(c *gin.Context) (string, string, error) {
 	// Get token from cookie/headers
 	token, err := c.Cookie("token")
@@ -87,5 +87,5 @@ func GetUserIDAndUsernameFromContext(c *gin.Context) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	return claims.UserID.Hex(), claims.Username, nil
+	return claims.UserID, claims.Username, nil
 }

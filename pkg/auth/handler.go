@@ -4,7 +4,6 @@ import (
 	"chat-app/pkg/user"
 	"chat-app/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
@@ -12,7 +11,7 @@ import (
 func LoginUserHandler(authService AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var credentials UserCredentials
-		var authenticatedUser *user.User
+		var authenticatedUser *user.UserEntity
 
 		// Bind request JSON to UserLogin struct
 		if err := c.ShouldBindJSON(&credentials); err != nil {
@@ -46,12 +45,8 @@ func LoginUserHandler(authService AuthService) gin.HandlerFunc {
 			return
 		}
 
-		// objectID from string to objectID
-
-		objectID, err := primitive.ObjectIDFromHex(authenticatedUser.ID)
-
 		// Generate JWT token
-		token, err := utils.GenerateToken(&credentials.Username, &objectID, &authenticatedUser.Role)
+		token, err := utils.GenerateToken(&credentials.Username, &authenticatedUser.ID, &authenticatedUser.Role)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
 			return
