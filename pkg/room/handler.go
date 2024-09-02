@@ -4,7 +4,6 @@ import (
 	"chat-app/pkg/user"
 	"chat-app/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"regexp"
 )
@@ -12,7 +11,7 @@ import (
 // CreateRoomHandler create a room
 func CreateRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var newRoom Room
+		var newRoom RoomEntity
 		if err := c.ShouldBindJSON(&newRoom); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
@@ -20,12 +19,6 @@ func CreateRoomHandler(roomService RoomService) gin.HandlerFunc {
 		// check if name, creator and description are empty
 		if newRoom.Name == "" || newRoom.Description == "" || newRoom.Creator == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields are required"})
-			return
-		}
-		// check if creator is a valid objectID, and convert it to an objectID
-		_, err := primitive.ObjectIDFromHex(newRoom.Creator)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The creator does not exist"})
 			return
 		}
 
@@ -76,13 +69,8 @@ func CreateRoomHandler(roomService RoomService) gin.HandlerFunc {
 func GetRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(roomID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
-			return
-		}
 		// get room by id
-		room, err := roomService.GetRoom(c.Request.Context(), objectID)
+		room, err := roomService.GetRoom(c.Request.Context(), roomID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get room"})
 			return
@@ -95,13 +83,9 @@ func GetRoomHandler(roomService RoomService) gin.HandlerFunc {
 func GetUserRoomsHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(userID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get rooms"})
-			return
-		}
+
 		// get all rooms where user is a member
-		rooms, err := roomService.GetUserRooms(c.Request.Context(), objectID)
+		rooms, err := roomService.GetUserRooms(c.Request.Context(), userID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
 			return
@@ -115,13 +99,8 @@ func GetUserRoomsHandler(roomService RoomService) gin.HandlerFunc {
 func GetRoomsCreatedByAdminHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(userID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get rooms"})
-			return
-		}
 		// get all rooms created by an admin
-		rooms, err := roomService.GetRoomsCreatedByAdmin(c.Request.Context(), objectID)
+		rooms, err := roomService.GetRoomsCreatedByAdmin(c.Request.Context(), userID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
 			return
@@ -135,12 +114,8 @@ func GetRoomsCreatedByAdminHandler(roomService RoomService) gin.HandlerFunc {
 func GetRoomMembersHandler(roomService RoomService, userService user.UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(roomID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
-			return
-		}
-		room, err := roomService.GetRoom(c.Request.Context(), objectID)
+
+		room, err := roomService.GetRoom(c.Request.Context(), roomID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get room"})
 			return
@@ -148,15 +123,9 @@ func GetRoomMembersHandler(roomService RoomService, userService user.UserService
 		// get all members id of a room in an array
 		membersID := room.Members
 		// get all users by id
-		var users []user.User
+		var users []user.UserEntity
 		for _, memberID := range membersID {
-			// convert memberID string to string hex
-			memberObjectID, err := primitive.ObjectIDFromHex(memberID)
-			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get members"})
-				return
-			}
-			userRetrieved, err := userService.GetUser(c.Request.Context(), memberObjectID)
+			userRetrieved, err := userService.GetUser(c.Request.Context(), memberID)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get members"})
 				return
@@ -175,22 +144,12 @@ func GetRoomMembersHandler(roomService RoomService, userService user.UserService
 func AddMemberToRoom(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(roomID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
-			return
-		}
-		var member Member
+		var member MemberEntity
 		if err := c.ShouldBindJSON(&member); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
 		}
-		memberObjectID, err := primitive.ObjectIDFromHex(member.ID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The member does not exist"})
-			return
-		}
-		room, err := roomService.AddMember(c.Request.Context(), objectID, memberObjectID)
+		room, err := roomService.AddMember(c.Request.Context(), roomID, member.ID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not add member"})
 			return
@@ -202,24 +161,16 @@ func AddMemberToRoom(roomService RoomService) gin.HandlerFunc {
 // RemoveMemberFromRoom remove a member from a room
 func RemoveMemberFromRoom(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+
 		roomID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(roomID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
-			return
-		}
-		var member Member
+
+		var member MemberEntity
 		if err := c.ShouldBindJSON(&member); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
 		}
-		// convert member ID string to string hex
-		memberObjectID, err := primitive.ObjectIDFromHex(member.ID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The member does not exist"})
-			return
-		}
-		room, err := roomService.RemoveMember(c.Request.Context(), objectID, memberObjectID)
+
+		room, err := roomService.RemoveMember(c.Request.Context(), roomID, member.ID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not remove member"})
 			return
@@ -231,14 +182,11 @@ func RemoveMemberFromRoom(roomService RoomService) gin.HandlerFunc {
 // AddHashtagToRoomHandler add a hashtag to a room
 func AddHashtagToRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var room *Room
+		// get room by id
+		var room *RoomEntity
 		roomID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(roomID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
-			return
-		}
-		var hashtagToAdd Hashtag
+
+		var hashtagToAdd HashtagEntity
 		if err := c.ShouldBindJSON(&hashtagToAdd); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": " Invalid hashtag"})
 			return
@@ -254,7 +202,7 @@ func AddHashtagToRoomHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid hashtag"})
 			return
 		}
-		room, err = roomService.AddHashtag(c.Request.Context(), objectID, hashtagToAdd.Hashtag)
+		room, err := roomService.AddHashtag(c.Request.Context(), roomID, hashtagToAdd.Hashtag)
 
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Error adding hashtag " + hashtagToAdd.Hashtag})
@@ -269,14 +217,10 @@ func AddHashtagToRoomHandler(roomService RoomService) gin.HandlerFunc {
 // RemoveHashtagFromRoomHandler remove a hashtag from a room
 func RemoveHashtagFromRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var room *Room
+		var room *RoomEntity
 		roomID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(roomID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
-			return
-		}
-		var hashtagToRemove Hashtag
+
+		var hashtagToRemove HashtagEntity
 		if err := c.ShouldBindJSON(&hashtagToRemove); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": " Invalid hashtag"})
 			return
@@ -292,7 +236,8 @@ func RemoveHashtagFromRoomHandler(roomService RoomService) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid hashtag"})
 			return
 		}
-		room, err = roomService.RemoveHashtag(c.Request.Context(), objectID, hashtagToRemove.Hashtag)
+		// remove hashtag from room
+		room, err := roomService.RemoveHashtag(c.Request.Context(), roomID, hashtagToRemove.Hashtag)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Error removing hashtag " + hashtagToRemove.Hashtag})
 			return
@@ -306,6 +251,7 @@ func RemoveHashtagFromRoomHandler(roomService RoomService) gin.HandlerFunc {
 // GetRoomsHandler get all rooms
 func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// get all rooms
 		rooms, err := roomService.GetAllRooms(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
@@ -319,19 +265,17 @@ func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
 func DeleteRoomHandler(roomService RoomService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		// get user id from token
 		userConnectedId, _, err := utils.GetUserIDAndUsernameFromContext(c)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete room"})
 			return
 		}
 
+		// get room by id
 		roomID := c.Param("id")
-		objectID, err := primitive.ObjectIDFromHex(roomID)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
-			return
-		}
-		room, err := roomService.GetRoom(c.Request.Context(), objectID)
+
+		room, err := roomService.GetRoom(c.Request.Context(), roomID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get room"})
 			return
