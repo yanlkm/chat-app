@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// CreateMessageHandler creates a new message.
 func CreateMessageHandler(messageService MessageService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
@@ -65,6 +66,7 @@ func CreateMessageHandler(messageService MessageService) gin.HandlerFunc {
 	}
 }
 
+// GetMessagesHandler retrieves all messages from a room.
 func GetMessagesHandler(messageService MessageService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomIDString := c.Param("id")
@@ -80,6 +82,7 @@ func GetMessagesHandler(messageService MessageService) gin.HandlerFunc {
 	}
 }
 
+// DeleteMessageHandler deletes a message.
 func DeleteMessageHandler(messageService MessageService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		messageIDString := c.Param("id")

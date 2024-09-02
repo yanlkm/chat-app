@@ -18,6 +18,7 @@ type MessageRepository interface {
 	DeleteMessage(ctx context.Context, messageID string) error
 }
 
+// messageRepository is a struct that embeds the collection of messages and rooms
 type messageRepository struct {
 	collectionMessage *mongo.Collection
 	collectionRoom    *mongo.Collection

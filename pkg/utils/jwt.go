@@ -83,9 +83,11 @@ func GetUserIDAndUsernameFromContext(c *gin.Context) (string, string, error) {
 		}
 
 	}
+	// Verify token
 	claims, err := VerifyToken(&token)
 	if err != nil {
 		return "", "", err
 	}
+	// Return user Id and Username
 	return claims.UserID, claims.Username, nil
 }

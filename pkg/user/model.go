@@ -2,6 +2,7 @@ package user
 
 import "time"
 
+// UserModel represents the structure of a user entity.
 type UserModel struct {
 	ID           string    `bson:"_id,omitempty"`
 	Username     string    `bson:"username,omitempty"`
@@ -14,6 +15,7 @@ type UserModel struct {
 	JoinedSalons []string  `bson:"joinedRooms,omitempty"`
 }
 
+// ModelToEntity converts a user model to a user entity.
 func ModelToEntity(model *UserModel) *UserEntity {
 	return &UserEntity{
 		ID:           model.ID,
@@ -28,6 +30,7 @@ func ModelToEntity(model *UserModel) *UserEntity {
 	}
 }
 
+// EntityToModel converts a user entity to a user model.
 func EntityToModel(entity *UserEntity) *UserModel {
 	return &UserModel{
 		ID:           entity.ID,

@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// MessageEntity struct
 type MessageModel struct {
 	ID        primitive.ObjectID `bson:"_id,omitempty"`
 	RoomID    string             `bson:"roomId,omitempty"`
@@ -16,6 +17,7 @@ type MessageModel struct {
 	//UpdateAt time.Time `json:"updateAt,omitempty" bson:"updateAt,omitempty"`
 }
 
+// MessageEntity struct
 func ModelToEntity(message *MessageModel) *MessageEntity {
 	return &MessageEntity{
 		ID:        message.ID.Hex(),
@@ -27,6 +29,7 @@ func ModelToEntity(message *MessageModel) *MessageEntity {
 	}
 }
 
+// MessageEntity struct
 func EntityToModel(message *MessageEntity) *MessageModel {
 	return &MessageModel{
 		ID:        stringToObjectID(message.ID),

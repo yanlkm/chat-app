@@ -128,6 +128,7 @@ func GetUserHandler(userService UserService) gin.HandlerFunc {
 // GetUsersHandler retrieves all users.
 func GetUsersHandler(userService UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// get all users
 		users, err := userService.GetAllUsers(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed displaying users"})
@@ -145,8 +146,9 @@ func GetUsersHandler(userService UserService) gin.HandlerFunc {
 // UpdateUserHandler updates an existing user.
 func UpdateUserHandler(userService UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-
+		// get user id
 		userID := c.Param("id")
+		// entity to store user update
 		var updatedUser UserUpdateEntity
 		if err := c.ShouldBindJSON(&updatedUser); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
@@ -169,7 +171,7 @@ func UpdateUserHandler(userService UserService) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid username"})
 			return
 		}
-
+		// update user
 		if err := userService.UpdateUser(c.Request.Context(), userID, updatedUser.Username); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 			return
@@ -188,6 +190,7 @@ func UpdatePasswordHandler(userService UserService) gin.HandlerFunc {
 		var user *UserEntity
 		var passwordUpdate PasswordUpdateEntity
 
+		// check if password update is valid
 		if err := c.ShouldBindJSON(&passwordUpdate); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
@@ -205,6 +208,7 @@ func UpdatePasswordHandler(userService UserService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Please, change your new password"})
 			return
 		}
+		// update password
 		passwordUpdate.NewPassword = hashedPassword
 
 		// check if old password is correct
@@ -223,6 +227,7 @@ func UpdatePasswordHandler(userService UserService) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
 			return
 		}
+		// remove password from the response
 		c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
 	}
 }
@@ -235,13 +240,16 @@ func BanUserHandler(userService UserService) gin.HandlerFunc {
 		var bannerID string
 		var bannedID string
 
+		// get user id : bannerID and bannedID
 		bannerID = c.Param("id")
 		bannedID = c.Param("idBanned")
 
+		// ban user
 		if err := userService.BanUser(c.Request.Context(), bannerID, bannedID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to ban user"})
 			return
 		}
+		// remove password from the response
 		c.JSON(http.StatusOK, gin.H{"message": "User banned successfully"})
 	}
 }
@@ -255,11 +263,12 @@ func UnBanUserHandler(userService UserService) gin.HandlerFunc {
 		var bannedID string
 		bannerID = c.Param("id")
 		bannedID = c.Param("idBanned")
-
+		// unban user
 		if err := userService.UnBanUser(c.Request.Context(), bannerID, bannedID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unban user"})
 			return
 		}
+		// remove password from the response
 		c.JSON(http.StatusOK, gin.H{"message": "User unbanned successfully"})
 
 	}
@@ -268,12 +277,14 @@ func UnBanUserHandler(userService UserService) gin.HandlerFunc {
 // DeleteUserHandler deletes a user by ID.
 func DeleteUserHandler(userService UserService) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		// get user id
 		userID := c.Param("id")
-
+		// delete user
 		if err := userService.DeleteUser(c.Request.Context(), userID); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user account"})
 			return
 		}
+		// remove password from the response
 		c.JSON(http.StatusOK, gin.H{"message": "Account deleted successfully"})
 	}
 }

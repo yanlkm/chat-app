@@ -1,5 +1,6 @@
 package message
 
+// MessageEntity struct
 type MessageEntity struct {
 	ID        string `json:"_id,omitempty"`
 	RoomID    string `json:"roomId,omitempty"`

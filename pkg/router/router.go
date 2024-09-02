@@ -83,7 +83,7 @@ func NewRouter(userService user.UserService, codeService code.CodeService, authS
 		auth.LogoutUserHandler(authService))
 
 	// websocket routes
-	r.GET("/ws", func(c *gin.Context) {
+	r.GET("/ws", middlewares.IsLoggedInMiddleware(), func(c *gin.Context) {
 		websocket.WebSocketHandler(c, messageService, roomService)
 	})
 	// starting handling rooms

@@ -10,14 +10,14 @@ import (
 	"time"
 )
 
-// Room struct from the websocket package
+// RoomSocket struct from the websocket package
 type RoomSocket struct {
 	ID        string
 	Members   map[*websocket.Conn]bool
 	broadcast chan MessageSocket
 }
 
-// Message struct from the websocket package
+// MessageSocket struct from the websocket package
 type MessageSocket struct {
 	RoomID    string    `json:"roomId,omitempty"`
 	Username  string    `json:"username,omitempty"`
@@ -26,6 +26,7 @@ type MessageSocket struct {
 	CreatedAt time.Time `json:"createdAt,omitempty"`
 }
 
+// upgrader variable from the websocket package
 var (
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
@@ -41,13 +42,16 @@ var (
 
 // GetRoomsFromDatabase retrieves rooms from the database
 func GetRoomsFromDatabase(c *gin.Context, roomService room.RoomService) []*RoomSocket {
+	// Get all rooms from the database
 	roomsFromDB, err := roomService.GetAllRooms(c)
 	if err != nil {
 		fmt.Printf("Error getting rooms from database: %v\n", err)
 		return nil
 	}
 
+	// Create a slice of RoomSocket structs
 	var rooms []*RoomSocket
+	// Append each room to the slice
 	for _, r := range roomsFromDB {
 		rooms = append(rooms, &RoomSocket{
 			ID:        r.ID,
@@ -55,11 +59,13 @@ func GetRoomsFromDatabase(c *gin.Context, roomService room.RoomService) []*RoomS
 			broadcast: make(chan MessageSocket),
 		})
 	}
+	// Return the slice of rooms
 	return rooms
 }
 
 // UpdateRoomsFromDatabase updates the rooms map with the latest rooms from the database
 func UpdateRoomsFromDatabase(c *gin.Context, roomService room.RoomService) {
+	// Get all rooms from the database
 	roomsFromDB, err := roomService.GetAllRooms(c)
 	if err != nil {
 		fmt.Printf("Error updating rooms from database: %v\n", err)
@@ -93,6 +99,7 @@ func UpdateRoomsFromDatabase(c *gin.Context, roomService room.RoomService) {
 				break
 			}
 		}
+		// If the room is not found in the database, delete it from the rooms map
 		if !found {
 			delete(rooms, id)
 		}
@@ -102,9 +109,12 @@ func UpdateRoomsFromDatabase(c *gin.Context, roomService room.RoomService) {
 // handleRoomBroadcast handles broadcasting messages to all members in the room
 func handleRoomBroadcast(room *RoomSocket) {
 	for {
+		// Get the message from the broadcast channel
 		msg := <-room.broadcast
 
+		// Broadcast the message to all members in the room
 		roomsMu.Lock()
+		// Iterate over all members in the room
 		for client := range room.Members {
 			err := client.WriteJSON(msg)
 			if err != nil {
@@ -113,35 +123,42 @@ func handleRoomBroadcast(room *RoomSocket) {
 				delete(room.Members, client)
 			}
 		}
+		// Unlock the rooms mutex
 		roomsMu.Unlock()
 	}
 }
 
 // HandleRooms creates goroutines to manage existing rooms
 func HandleRooms(c *gin.Context, roomService room.RoomService) {
+	// Get all rooms from the database
 	roomsFromDB := GetRoomsFromDatabase(c, roomService)
 
+	// Lock the rooms map
 	for _, roomDB := range roomsFromDB {
 		roomSocket := &RoomSocket{
 			ID:        roomDB.ID,
 			Members:   make(map[*websocket.Conn]bool),
 			broadcast: make(chan MessageSocket),
 		}
-
+		// Start broadcasting messages to all members in the room
 		roomsMu.Lock()
 		rooms[roomSocket.ID] = roomSocket
 		roomsMu.Unlock()
-
+		// Start broadcasting messages to all members in the room
 		go func(r *RoomSocket) {
 			for {
+				// Get the message from the broadcast channel
 				msg := <-r.broadcast
 
+				// Broadcast the message to all members in the room
 				for client := range r.Members {
 					err := client.WriteJSON(msg)
 					if err != nil {
 						fmt.Printf("error: %v\n", err)
+						// Close the client connection
 						client.Close()
 						roomsMu.Lock()
+						// Delete the client from the room
 						delete(r.Members, client)
 						roomsMu.Unlock()
 					}
