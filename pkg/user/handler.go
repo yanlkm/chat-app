@@ -16,6 +16,7 @@ func CreateUserHandler(userService UserService, codeService code.CodeService) gi
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
 		}
+
 		// Check if user has bad input
 		if newUser.Username == "" || newUser.Password == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "All fields are required"})
@@ -102,6 +103,8 @@ func CreateUserHandler(userService UserService, codeService code.CodeService) gi
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 			return
 		}
+		// Remove password from the response
+		newUser.Password = ""
 		c.JSON(http.StatusOK, newUser)
 	}
 }

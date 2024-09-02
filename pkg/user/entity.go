@@ -7,13 +7,13 @@ type UserEntity struct {
 	ID           string    `json:"_id,omitempty"`
 	Username     string    `json:"username,omitempty"`
 	Email        string    `json:"email,omitempty"`
-	Password     string    `json:"-"`
+	Password     string    `json:"password,omitempty"`
 	CreatedAt    time.Time `json:"createdAt,omitempty"`
 	UpdatedAt    time.Time `json:"updatedAt,omitempty"`
 	Role         string    `json:"role,omitempty"`
 	Validity     string    `json:"validity,omitempty"`
 	Code         string    `json:"code,omitempty"`
-	JoinedSalons []string  `json:"joinedSalons,omitempty"`
+	JoinedSalons []string  `json:"joinedSalons"`
 }
 
 // UserValidationEntity  represents the login credentials provided by the user.

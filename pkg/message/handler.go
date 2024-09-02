@@ -10,7 +10,7 @@ import (
 func CreateMessageHandler(messageService MessageService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
-		var message Message
+		var message MessageEntity
 		if err := c.BindJSON(&message); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
@@ -69,14 +69,8 @@ func GetMessagesHandler(messageService MessageService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		roomIDString := c.Param("id")
 
-		// check if roomID is a valid objectID, and convert it to an objectID
-		roomID, err := primitive.ObjectIDFromHex(roomIDString)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "The room does not exist"})
-			return
-		}
 		// get messages
-		messages, err := messageService.GetMessages(c.Request.Context(), roomID)
+		messages, err := messageService.GetMessages(c.Request.Context(), roomIDString)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -90,13 +84,7 @@ func DeleteMessageHandler(messageService MessageService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		messageIDString := c.Param("id")
 
-		// check if messageID is a valid objectID, and convert it to an objectID
-		messageID, err := primitive.ObjectIDFromHex(messageIDString)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "No message found"})
-			return
-		}
-		message, err := messageService.GetMessage(c.Request.Context(), messageID)
+		message, err := messageService.GetMessage(c.Request.Context(), messageIDString)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete message"})
 			return
@@ -114,7 +102,7 @@ func DeleteMessageHandler(messageService MessageService) gin.HandlerFunc {
 		}
 
 		// delete message
-		if err := messageService.DeleteMessage(c.Request.Context(), messageID); err != nil {
+		if err := messageService.DeleteMessage(c.Request.Context(), messageIDString); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete message"})
 			return
 		}

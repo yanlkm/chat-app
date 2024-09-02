@@ -43,7 +43,7 @@ func WebSocketHandler(c *gin.Context, messageService message.MessageService, roo
 			break
 		}
 		// save the message to the database
-		messageDB := message.Message{
+		messageDB := message.MessageEntity{
 			RoomID:   roomID,
 			UserID:   msg.UserID,
 			Username: msg.Username,

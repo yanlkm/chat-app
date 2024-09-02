@@ -50,7 +50,7 @@ func GetRoomsFromDatabase(c *gin.Context, roomService room.RoomService) []*RoomS
 	var rooms []*RoomSocket
 	for _, r := range roomsFromDB {
 		rooms = append(rooms, &RoomSocket{
-			ID:        r.ID.Hex(),
+			ID:        r.ID,
 			Members:   make(map[*websocket.Conn]bool),
 			broadcast: make(chan MessageSocket),
 		})
@@ -72,7 +72,7 @@ func UpdateRoomsFromDatabase(c *gin.Context, roomService room.RoomService) {
 
 	// Update the global rooms map
 	for _, r := range roomsFromDB {
-		roomID := r.ID.Hex()
+		roomID := r.ID
 		if _, ok := rooms[roomID]; !ok {
 			rooms[roomID] = &RoomSocket{
 				ID:        roomID,
@@ -88,7 +88,7 @@ func UpdateRoomsFromDatabase(c *gin.Context, roomService room.RoomService) {
 	for id := range rooms {
 		found := false
 		for _, r := range roomsFromDB {
-			if r.ID.Hex() == id {
+			if r.ID == id {
 				found = true
 				break
 			}

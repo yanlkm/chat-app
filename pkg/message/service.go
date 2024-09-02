@@ -2,14 +2,13 @@ package message
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type MessageService interface {
-	CreateMessage(ctx context.Context, message *Message) (*Message, error)
-	GetMessages(ctx context.Context, roomID primitive.ObjectID) ([]*Message, error)
-	GetMessage(ctx context.Context, messageID primitive.ObjectID) (*Message, error)
-	DeleteMessage(ctx context.Context, messageID primitive.ObjectID) error
+	CreateMessage(ctx context.Context, message *MessageEntity) (*MessageEntity, error)
+	GetMessages(ctx context.Context, roomID string) ([]*MessageEntity, error)
+	GetMessage(ctx context.Context, messageID string) (*MessageEntity, error)
+	DeleteMessage(ctx context.Context, messageID string) error
 }
 
 type messageService struct {
@@ -20,17 +19,17 @@ func NewMessageService(repo MessageRepository) MessageService {
 	return &messageService{repo: repo}
 }
 
-func (m *messageService) CreateMessage(ctx context.Context, message *Message) (*Message, error) {
+func (m *messageService) CreateMessage(ctx context.Context, message *MessageEntity) (*MessageEntity, error) {
 	return m.repo.CreateMessage(ctx, message)
 }
 
-func (m *messageService) GetMessages(ctx context.Context, roomID primitive.ObjectID) ([]*Message, error) {
+func (m *messageService) GetMessages(ctx context.Context, roomID string) ([]*MessageEntity, error) {
 	return m.repo.GetMessages(ctx, roomID)
 }
-func (m *messageService) GetMessage(ctx context.Context, messageID primitive.ObjectID) (*Message, error) {
+func (m *messageService) GetMessage(ctx context.Context, messageID string) (*MessageEntity, error) {
 	return m.repo.GetMessage(ctx, messageID)
 }
 
-func (m *messageService) DeleteMessage(ctx context.Context, messageID primitive.ObjectID) error {
+func (m *messageService) DeleteMessage(ctx context.Context, messageID string) error {
 	return m.repo.DeleteMessage(ctx, messageID)
 }
