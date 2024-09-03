@@ -47,8 +47,6 @@ func WebSocketHandler(c *gin.Context, messageService message.MessageService, roo
 			roomsMu.Unlock()
 			break
 		}
-		// check the message content
-		fmt.Println("msg : " + msg.Token + " " + msg.Message + " " + msg.UserID + " " + msg.Username)
 
 		// check the token on the message
 		if msg.Token == "" {
