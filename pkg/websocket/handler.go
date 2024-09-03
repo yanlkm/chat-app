@@ -47,16 +47,19 @@ func WebSocketHandler(c *gin.Context, messageService message.MessageService, roo
 			roomsMu.Unlock()
 			break
 		}
-		// check the token on the message return error json message
+		// check the message content
+		fmt.Println("msg : " + msg.Token + " " + msg.Message + " " + msg.UserID + " " + msg.Username)
+
+		// check the token on the message
 		if msg.Token == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send message without token"})
+			roomsMu.Lock()
 			roomsMu.Unlock()
 			return
 		}
 		if msg.Token != "" {
 			_, err := utils.VerifyToken(&msg.Token)
 			if err != nil {
-				c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+				roomsMu.Lock()
 				roomsMu.Unlock()
 				return
 			}
