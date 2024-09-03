@@ -3,7 +3,7 @@ package code
 import "context"
 
 type CodeService interface {
-	CreateCode(ctx context.Context, code *Code) error
+	CreateCode(ctx context.Context, code *CodeEntity) error
 	UpdateCode(ctx context.Context, codeString *string) error
 	CheckCode(ctx context.Context, codeString *string) (bool, error)
 }
@@ -16,7 +16,7 @@ func NewCodeService(repo CodeRepository) CodeService {
 	return &codeService{repo: repo}
 }
 
-func (c *codeService) CreateCode(ctx context.Context, code *Code) error {
+func (c *codeService) CreateCode(ctx context.Context, code *CodeEntity) error {
 	return c.repo.Create(ctx, code)
 }
 

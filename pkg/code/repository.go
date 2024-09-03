@@ -10,7 +10,7 @@ import (
 
 // repository to create and update code
 type CodeRepository interface {
-	Create(ctx context.Context, code *Code) error
+	Create(ctx context.Context, code *CodeEntity) error
 	Update(ctx context.Context, codeString *string) error
 	Check(ctx context.Context, codeString *string) (bool, error)
 }
@@ -23,15 +23,16 @@ func NewCodeRepository(collection *mongo.Collection) CodeRepository {
 	return &codeRepository{collection: collection}
 }
 
-func (r *codeRepository) Create(ctx context.Context, code *Code) error {
+// Create a new code
+func (r *codeRepository) Create(ctx context.Context, code *CodeEntity) error {
 	// add the current time to the code and set is_used to false
-	code = &Code{
+	codeModel := &CodeModel{
 		Code:      code.Code,
 		CreatedAt: time.Now(),
 		IsUsed:    false,
 	}
 	// Check if the code is unique in the database
-	filter := bson.M{"code": code.Code}
+	filter := bson.M{"code": codeModel.Code}
 	err := r.collection.FindOne(ctx, filter).Err()
 	if err == nil {
 		// The code already exists in the database
@@ -43,7 +44,7 @@ func (r *codeRepository) Create(ctx context.Context, code *Code) error {
 	}
 
 	// Insert the code into the database
-	_, err = r.collection.InsertOne(ctx, code)
+	_, err = r.collection.InsertOne(ctx, codeModel)
 	if err != nil {
 		// An error occurred while inserting the code
 		return err
@@ -52,6 +53,7 @@ func (r *codeRepository) Create(ctx context.Context, code *Code) error {
 	return nil
 }
 
+// Update an existing code
 func (r *codeRepository) Update(ctx context.Context, codeString *string) error {
 	// Update the code status to true when it's used
 	filter := bson.M{"code": *codeString}
@@ -65,6 +67,7 @@ func (r *codeRepository) Update(ctx context.Context, codeString *string) error {
 	return nil
 }
 
+// Check if a code existing
 func (r *codeRepository) Check(ctx context.Context, codeString *string) (bool, error) {
 	// Check if the code exists in the database and is not used
 	filter := bson.M{"code": *codeString, "isUsed": false}

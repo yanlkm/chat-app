@@ -5,10 +5,10 @@ import (
 	"net/http"
 )
 
-// createCodeHandler creates a new code.
+// CreateCodeHandler creates a new code.
 func CreateCodeHandler(codeService CodeService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var newCode Code
+		var newCode CodeEntity
 		if err := c.ShouldBindJSON(&newCode); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
 			return
