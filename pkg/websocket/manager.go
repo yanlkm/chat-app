@@ -24,6 +24,7 @@ type MessageSocket struct {
 	UserID    string    `json:"userId,omitempty"`
 	Message   string    `json:"message,omitempty"`
 	CreatedAt time.Time `json:"createdAt,omitempty"`
+	Token     string    `json:"token,omitempty"`
 }
 
 // upgrader variable from the websocket package

@@ -20,7 +20,7 @@ func CreateCodeHandler(codeService CodeService) gin.HandlerFunc {
 		}
 		// Create the code
 		if err := codeService.CreateCode(c.Request.Context(), &newCode); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create code"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to create code"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "Code created successfully"})

@@ -57,7 +57,7 @@ func CreateRoomHandler(roomService RoomService) gin.HandlerFunc {
 		// create room
 		room, err := roomService.CreateRoom(c.Request.Context(), &newRoom)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create room"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not create room"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"room": room})
@@ -72,7 +72,7 @@ func GetRoomHandler(roomService RoomService) gin.HandlerFunc {
 		// get room by id
 		room, err := roomService.GetRoom(c.Request.Context(), roomID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get room"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get room"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"room": room})
@@ -87,7 +87,7 @@ func GetUserRoomsHandler(roomService RoomService) gin.HandlerFunc {
 		// get all rooms where user is a member
 		rooms, err := roomService.GetUserRooms(c.Request.Context(), userID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get rooms"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"rooms": rooms})
@@ -102,7 +102,7 @@ func GetRoomsCreatedByAdminHandler(roomService RoomService) gin.HandlerFunc {
 		// get all rooms created by an admin
 		rooms, err := roomService.GetRoomsCreatedByAdmin(c.Request.Context(), userID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get rooms"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"rooms": rooms})
@@ -117,7 +117,7 @@ func GetRoomMembersHandler(roomService RoomService, userService user.UserService
 
 		room, err := roomService.GetRoom(c.Request.Context(), roomID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get room"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get room"})
 			return
 		}
 		// get all members id of a room in an array
@@ -127,7 +127,7 @@ func GetRoomMembersHandler(roomService RoomService, userService user.UserService
 		for _, memberID := range membersID {
 			userRetrieved, err := userService.GetUser(c.Request.Context(), memberID)
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get members"})
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get members"})
 				return
 			}
 			// remove password from user and more
@@ -151,7 +151,7 @@ func AddMemberToRoom(roomService RoomService) gin.HandlerFunc {
 		}
 		room, err := roomService.AddMember(c.Request.Context(), roomID, member.ID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not add member"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not add member"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"room": room})
@@ -172,7 +172,7 @@ func RemoveMemberFromRoom(roomService RoomService) gin.HandlerFunc {
 
 		room, err := roomService.RemoveMember(c.Request.Context(), roomID, member.ID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not remove member"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not remove member"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"room": room})
@@ -254,7 +254,7 @@ func GetRoomsHandler(roomService RoomService) gin.HandlerFunc {
 		// get all rooms
 		rooms, err := roomService.GetAllRooms(c.Request.Context())
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get rooms"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get rooms"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"status": true, "rooms": rooms})
@@ -268,7 +268,7 @@ func DeleteRoomHandler(roomService RoomService) gin.HandlerFunc {
 		// get user id from token
 		userConnectedId, _, err := utils.GetUserIDAndUsernameFromContext(c)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete room"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not delete room"})
 			return
 		}
 
@@ -277,22 +277,22 @@ func DeleteRoomHandler(roomService RoomService) gin.HandlerFunc {
 
 		room, err := roomService.GetRoom(c.Request.Context(), roomID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not get room"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not get room"})
 			return
 		}
 		// check if stringClaimsObjectID is the room creator
 		if userConnectedId != room.Creator {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "You are not allowed to do this action"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "You are not allowed to do this action"})
 			return
 		}
 		// check if there still members in room
 		if len(room.Members) > 1 && room.Members[0] != room.Creator {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Please, delete all room members before"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Please, delete all room members before"})
 			return
 		}
 		err = roomService.DeleteRoom(c.Request.Context(), room.ID)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Fail to delete room"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Fail to delete room"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "Room deleted successfully"})

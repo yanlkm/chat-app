@@ -3,6 +3,7 @@ package websocket
 import (
 	"chat-app/pkg/message"
 	"chat-app/pkg/room"
+	"chat-app/pkg/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -45,6 +46,20 @@ func WebSocketHandler(c *gin.Context, messageService message.MessageService, roo
 			delete(room.Members, ws)
 			roomsMu.Unlock()
 			break
+		}
+		// check the token on the message return error json message
+		if msg.Token == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot send message without token"})
+			roomsMu.Unlock()
+			return
+		}
+		if msg.Token != "" {
+			_, err := utils.VerifyToken(&msg.Token)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
+				roomsMu.Unlock()
+				return
+			}
 		}
 		// save the message to the database
 		messageDB := message.MessageEntity{

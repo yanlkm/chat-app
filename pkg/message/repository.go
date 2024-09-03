@@ -3,7 +3,6 @@ package message
 import (
 	"chat-app/pkg/room"
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -76,7 +75,6 @@ func (r *messageRepository) GetMessages(ctx context.Context, roomID string) ([]*
 	var roomRetrieved room.RoomModel
 	err = r.collectionRoom.FindOne(ctx, bson.D{{"_id", roomIDObjectID}}).Decode(&roomRetrieved)
 	if err != nil {
-		fmt.Println("Error 1 : ", err)
 		return nil, err
 
 	}

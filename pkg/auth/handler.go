@@ -48,7 +48,7 @@ func LoginUserHandler(authService AuthService) gin.HandlerFunc {
 		// Generate JWT token
 		token, err := utils.GenerateToken(&credentials.Username, &authenticatedUser.ID, &authenticatedUser.Role)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not generate token"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not generate token"})
 			return
 		}
 

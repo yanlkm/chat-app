@@ -26,11 +26,11 @@ func CreateMessageHandler(messageService MessageService) gin.HandlerFunc {
 		// check if userConnected is the one who sends a creation message request
 		_, usernameConnected, errConnection := utils.GetUserIDAndUsernameFromContext(c)
 		if errConnection != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not send a message"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not send a message"})
 			return
 		}
 		if message.Username != usernameConnected {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not send a message"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not send a message"})
 			return
 		}
 
@@ -59,7 +59,7 @@ func CreateMessageHandler(messageService MessageService) gin.HandlerFunc {
 		// create message
 		messageCreated, err := messageService.CreateMessage(c.Request.Context(), &message)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 		c.JSON(http.StatusOK, messageCreated)
@@ -74,7 +74,7 @@ func GetMessagesHandler(messageService MessageService) gin.HandlerFunc {
 		// get messages
 		messages, err := messageService.GetMessages(c.Request.Context(), roomIDString)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 
@@ -89,24 +89,24 @@ func DeleteMessageHandler(messageService MessageService) gin.HandlerFunc {
 
 		message, err := messageService.GetMessage(c.Request.Context(), messageIDString)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete message"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not delete message"})
 			return
 		}
 
 		// check if userConnected is the one who sends a deletion message request
 		_, usernameConnected, errConnection := utils.GetUserIDAndUsernameFromContext(c)
 		if errConnection != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete a message"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not delete a message"})
 			return
 		}
 		if message.Username != usernameConnected {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete a message"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not delete a message"})
 			return
 		}
 
 		// delete message
 		if err := messageService.DeleteMessage(c.Request.Context(), messageIDString); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not delete message"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Could not delete message"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"status": true, "message:": "your message has been successfully deleted !"})

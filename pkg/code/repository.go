@@ -3,7 +3,6 @@ package code
 import (
 	"context"
 	"errors"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
@@ -44,8 +43,6 @@ func (r *codeRepository) Create(ctx context.Context, code *Code) error {
 	}
 
 	// Insert the code into the database
-	// debug
-	fmt.Println("code : ", code)
 	_, err = r.collection.InsertOne(ctx, code)
 	if err != nil {
 		// An error occurred while inserting the code
