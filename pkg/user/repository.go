@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// UserRepository is the interface that wraps the basic CRUD operations for the user entity.
 type UserRepository interface {
 	Create(ctx context.Context, user *UserEntity) error
 	Read(ctx context.Context, id string) (*UserEntity, error)
@@ -22,10 +23,12 @@ type UserRepository interface {
 	Delete(ctx context.Context, id string) error
 }
 
+// userRepository represents the repository for the user entity.
 type userRepository struct {
 	collection *mongo.Collection
 }
 
+// NewUserRepository creates a new user repository.
 func NewUserRepository(collection *mongo.Collection) UserRepository {
 	return &userRepository{collection: collection}
 }

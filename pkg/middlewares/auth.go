@@ -48,7 +48,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-// Check If User Is Logged In and If Is Admin
+// IsAdminMiddleware Check If User Is Logged In and If Is Admin
 func IsAdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get token from cookie
@@ -87,7 +87,7 @@ func IsAdminMiddleware() gin.HandlerFunc {
 	}
 }
 
-// Check If User Is Logged In
+// IsLoggedInMiddleware check If User Is Logged In
 func IsLoggedInMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get token from cookie
