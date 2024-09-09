@@ -3,16 +3,18 @@ package main
 import (
 	"chat-app/pkg/auth"
 	"chat-app/pkg/code"
+	"chat-app/pkg/database"
 	"chat-app/pkg/message"
 	"chat-app/pkg/room"
 	"chat-app/pkg/router"
 	"chat-app/pkg/user"
 	"fmt"
-	"github.com/gorilla/handlers"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/handlers"
+	"github.com/joho/godotenv"
 )
 
 func main() {
