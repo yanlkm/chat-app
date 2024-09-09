@@ -3,7 +3,6 @@ package main
 import (
 	"chat-app/pkg/auth"
 	"chat-app/pkg/code"
-	"chat-app/pkg/database"
 	"chat-app/pkg/message"
 	"chat-app/pkg/room"
 	"chat-app/pkg/router"
@@ -25,7 +24,6 @@ func main() {
 
 	// Connect to MongoDB
 	mongoURI := os.Getenv("MONGO_URI")
-	fmt.Println(mongoURI)
 	client, err := mongo.NewMongoClient(mongoURI)
 	if err != nil {
 		fmt.Println("Failed to connect to MongoDB: %v", err)
