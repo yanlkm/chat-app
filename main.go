@@ -44,7 +44,7 @@ func main() {
 	codeRepo := code.NewCodeRepository(codeCollection)
 	codeService := code.NewCodeService(codeRepo)
 	// Initialize user repository and service
-	userRepo := user.NewUserRepository(userCollection)
+	userRepo := user.NewUserRepository(userCollection, messageCollection)
 	userService := user.NewUserService(userRepo)
 	// Initialize auth repository and service
 	authRepo := auth.NewAuthRepository(userCollection)

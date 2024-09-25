@@ -25,12 +25,13 @@ type UserRepository interface {
 
 // userRepository represents the repository for the user entity.
 type userRepository struct {
-	collection *mongo.Collection
+	collection        *mongo.Collection
+	collectionMessage *mongo.Collection
 }
 
 // NewUserRepository creates a new user repository.
-func NewUserRepository(collection *mongo.Collection) UserRepository {
-	return &userRepository{collection: collection}
+func NewUserRepository(collection *mongo.Collection, collectionMessage *mongo.Collection) UserRepository {
+	return &userRepository{collection: collection, collectionMessage: collectionMessage}
 }
 
 // Create creates a new user in the database.
@@ -117,11 +118,34 @@ func (r *userRepository) Update(ctx context.Context, id string, username string)
 	if err == nil && user.ID != id {
 		return errors.New("Username already exists")
 	}
+	// store the old username if error occurs
+	var oldUsername string
+	oldUsername = user.Username
+
 	// Update the username in the database
 	_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": bson.M{"username": username, "updatedAt": time.Now()}})
 	if err != nil {
 		return err
 	}
+
+	// Update the username in the messages collection
+	// Define the filter to find the collection message with the given userID in key "userId"
+	filter := bson.M{"userId": id}
+
+	// Define the update to change the username to the newUsername
+	update := bson.M{"$set": bson.M{"username": username}}
+	// find the messages with the filter and update the username
+	_, err = r.collectionMessage.UpdateMany(ctx, filter, update)
+	// if error occurs
+	if err != nil {
+		// if error occurs, revert the username to the old username
+		_, err = r.collection.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": bson.M{"username": oldUsername, "updatedAt": time.Now()}})
+		if err != nil {
+			return err
+		}
+		return err
+	}
+	// return nil if the update is successful
 	return nil
 }
 

@@ -3,9 +3,10 @@ package user
 import (
 	"chat-app/pkg/code"
 	"chat-app/pkg/utils"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
+
+	"github.com/gin-gonic/gin"
 )
 
 // CreateUserHandler creates a new user.
@@ -118,7 +119,7 @@ func GetUserHandler(userService UserService) gin.HandlerFunc {
 		// user without password
 		user.Password = ""
 		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Error getting user informations"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Error getting user information's"})
 			return
 		}
 		c.JSON(http.StatusOK, user)
@@ -176,6 +177,8 @@ func UpdateUserHandler(userService UserService) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to update user"})
 			return
 		}
+
+		// return updated user
 		c.JSON(http.StatusOK, updatedUser)
 	}
 }
