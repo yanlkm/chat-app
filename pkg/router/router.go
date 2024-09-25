@@ -44,7 +44,7 @@ func NewRouter(userService user.UserService, codeService code.CodeService, authS
 		code.CreateCodeHandler(codeService))
 
 	// Room routes
-	r.GET("rooms",
+	r.GET("rooms", middlewares.IsLoggedInMiddleware(),
 		room.GetRoomsHandler(roomService))
 	r.GET("rooms/:id", middlewares.IsLoggedInMiddleware(),
 		room.GetRoomHandler(roomService))
