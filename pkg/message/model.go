@@ -13,8 +13,6 @@ type MessageModel struct {
 	UserID    string             `bson:"userId,omitempty"`
 	Content   string             `bson:"content,omitempty"`
 	CreatedAt time.Time          `bson:"createdAt,omitempty"`
-	// TODO: Add UpdateAt field
-	//UpdateAt time.Time `json:"updateAt,omitempty" bson:"updateAt,omitempty"`
 }
 
 // ModelToEntity function

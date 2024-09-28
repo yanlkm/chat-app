@@ -62,12 +62,11 @@ func main() {
 	// Start HTTP server
 	port := os.Getenv("PORT")
 	fmt.Printf("Server started on %s", port)
-	// TODO : Change the configuration to allow only the frontend domain
 	// CORS configuration
 	err = http.ListenAndServe(port, handlers.CORS(
 		handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"}),
 		handlers.AllowedMethods([]string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"}),
-		handlers.AllowedOrigins([]string{"*"}),
+		handlers.AllowedOrigins([]string{os.Getenv("CORS_ORIGIN")}),
 	)(r))
 	if err != nil {
 		fmt.Printf("Failed to start server: %v\n", err)
