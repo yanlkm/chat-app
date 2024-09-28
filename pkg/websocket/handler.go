@@ -18,7 +18,7 @@ func WebSocketHandler(c *gin.Context, messageService message.MessageService, roo
 	// get the room from the rooms map
 	room, ok := rooms[roomID]
 	if !ok {
-		fmt.Println("Room not found")
+
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Room not found"})
 		roomsMu.Unlock()
 		return
@@ -28,8 +28,7 @@ func WebSocketHandler(c *gin.Context, messageService message.MessageService, roo
 	// upgrade the HTTP connection to a WebSocket connection
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		fmt.Println(err)
-		return
+			return
 	}
 	defer ws.Close()
 
@@ -41,7 +40,6 @@ func WebSocketHandler(c *gin.Context, messageService message.MessageService, roo
 		var msg MessageSocket
 		err := ws.ReadJSON(&msg)
 		if err != nil {
-			fmt.Println(err)
 			roomsMu.Lock()
 			delete(room.Members, ws)
 			roomsMu.Unlock()
@@ -72,7 +70,6 @@ func WebSocketHandler(c *gin.Context, messageService message.MessageService, roo
 		// create the message
 		_, err = messageService.CreateMessage(c.Request.Context(), &messageDB)
 		if err != nil {
-			fmt.Println(err)
 			roomsMu.Lock()
 			delete(room.Members, ws)
 			roomsMu.Unlock()

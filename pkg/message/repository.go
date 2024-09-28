@@ -85,7 +85,6 @@ func (r *messageRepository) GetMessages(ctx context.Context, roomID string) ([]*
 		// change ID string into ObjectID
 		messageObjectID, err := primitive.ObjectIDFromHex(messageId)
 		if err != nil {
-			// debug
 			return nil, err
 		}
 

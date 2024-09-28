@@ -37,8 +37,7 @@ func main() {
 	messageCollection := db.Collection("messages")
 	codeCollection := db.Collection("codes")
 
-	//debug
-	fmt.Println(userCollection)
+
 
 	// Initialize code repository and service
 	codeRepo := code.NewCodeRepository(codeCollection)
