@@ -45,7 +45,6 @@ func GetRoomsFromDatabase(c *gin.Context, roomService room.RoomService) []*RoomS
 	// Get all rooms from the database
 	roomsFromDB, err := roomService.GetAllRooms(c)
 	if err != nil {
-		fmt.Printf("Error getting rooms from database: %v\n", err)
 		return nil
 	}
 
@@ -68,7 +67,6 @@ func UpdateRoomsFromDatabase(c *gin.Context, roomService room.RoomService) {
 	// Get all rooms from the database
 	roomsFromDB, err := roomService.GetAllRooms(c)
 	if err != nil {
-		fmt.Printf("Error updating rooms from database: %v\n", err)
 		return
 	}
 
@@ -118,7 +116,6 @@ func handleRoomBroadcast(room *RoomSocket) {
 		for client := range room.Members {
 			err := client.WriteJSON(msg)
 			if err != nil {
-				fmt.Printf("error: %v\n", err)
 				client.Close()
 				delete(room.Members, client)
 			}
@@ -154,7 +151,6 @@ func HandleRooms(c *gin.Context, roomService room.RoomService) {
 				for client := range r.Members {
 					err := client.WriteJSON(msg)
 					if err != nil {
-						fmt.Printf("error: %v\n", err)
 						// Close the client connection
 						client.Close()
 						roomsMu.Lock()
