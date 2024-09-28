@@ -4,7 +4,6 @@ import (
 	"chat-app/pkg/message"
 	"chat-app/pkg/room"
 	"chat-app/pkg/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
